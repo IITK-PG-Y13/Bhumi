@@ -4,19 +4,24 @@ export default {
     [ 1, 1, 1 ],
     [ 0, 0, 0 ]
   ],
-  l: [
+  i: [
     [ 0, 0, 0 ],
     [ 1, 1, 1 ],
-    [ 1, 0, 0 ]
+    [ 0, 0, 0 ]
   ],
   s: [
     [ 1, 0, 0 ],
     [ 1, 1, 0 ],
     [ 0, 1, 0 ]
   ],
-  z: [
+  sl: [
     [ 0, 1, 0 ],
     [ 1, 1, 0 ],
+    [ 0, 0, 0 ]
+  ],
+  l: [
+    [ 1, 1, 1 ],
+    [ 1, 0, 0 ],
     [ 1, 0, 0 ]
   ],
   b: [
@@ -25,10 +30,18 @@ export default {
     [ 0, 0, 0 ]
   ],
   t: [
+    [ 0, 1, 0 ],
+    [ 0, 1, 1 ],
+    [ 0, 1, 0 ]
+  ],
+  bt: [
     [ 1, 0, 0 ],
     [ 1, 1, 1 ],
     [ 1, 0, 0 ]
   ],
+  get (shape) {
+    return JSON.parse(JSON.stringify(this[shape]))
+  },
   rotate (matrix) {
     return matrix[0].map((val, index) => matrix.map(row => row[index]).reverse());
   },

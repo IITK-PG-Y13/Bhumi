@@ -50,10 +50,10 @@
               </div>
             </div>
             <div class="card-footer">
-              <a class="card-footer-item" @click="cardIdx = (cardIdx - 1) % cardList.length">
+              <a class="card-footer-item" @click="cardIdx = (cardListLength + cardIdx - 1) % cardListLength">
                 Prev
               </a>
-              <a class="card-footer-item" @click="cardIdx = (cardIdx + 1) % cardList.length">
+              <a class="card-footer-item" @click="cardIdx = (cardIdx + 1) % cardListLength">
                 Next
               </a>
             </div>
@@ -66,22 +66,10 @@
 </template>
 
 <script>
-import shapes from '../data/shapes';
+import shapes from '../data/shapes'
+import { cardList } from '../data/initialConfig'
+console.log(cardList)
 
-const CARDLIST = [
-  {
-    shape: 'j',
-    type: 'yellow'
-  },
-  {
-    shape: 's',
-    type: 'brown'
-  },
-  {
-    shape: 't',
-    type: 'green'
-  }
-]
 export default {
   name: 'HelloWorld',
   data () {
@@ -89,7 +77,7 @@ export default {
       cardIdx: 0,
       cardFlip: 0,
       cardRotate: 0,
-      cardList: [],
+      cardListLength: cardList.length,
       hover: [],
       map: {}
     }
@@ -104,19 +92,11 @@ export default {
         }
       }
     }
-
-    CARDLIST.forEach((cl) => {
-      console.log(cl);
-      this.cardList.push({
-        type: cl.type,
-        shape: shapes[cl.shape]
-      })
-    })
   },
   computed: {
     currentCard () {
-      let cl = this.cardList[this.cardIdx];
-      let newMatrix = cl.shape;
+      let cl = cardList[this.cardIdx];
+      let newMatrix = shapes.get(cl.shape);
       for (let i = 0; i < this.cardRotate; i++) {
         newMatrix = shapes.rotate(newMatrix)
       }

@@ -21,7 +21,7 @@
           </table>
         </div>
         <div class="column is-6">
-          <div class="card">
+          <div class="card" v-if="currentCard">
             <div class="card-content">
               <div class="tile is-ancestor">
                 <div class="tile is-parent is-child has-background-info">
@@ -58,6 +58,15 @@
               </a>
             </div>
           </div>
+          <div class="level" v-if="currentTurn">
+            <div class="level-item"
+                 v-for="player in currentTurn.playersPlayed">
+              <div class="box">
+                {{player}}
+              </div>
+            </div>
+
+          </div>
         </div>
       </div>
     </div>
@@ -67,20 +76,24 @@
 
 <script>
 import shapes from '../data/shapes'
-import { cardList } from '../data/initialConfig'
-console.log(cardList)
+import db from '../firebase/init'
 
 export default {
   name: 'HelloWorld',
   data () {
     return {
+      gameConfig: null,
+      playerId: 0,
       cardIdx: 0,
+      turnIdx: 0,
       cardFlip: 0,
       cardRotate: 0,
-      cardListLength: cardList.length,
       hover: [],
       map: {}
     }
+  },
+  firebase: {
+    gameConfig: db.ref('gameConfig')
   },
   created () {
     for (let i = 0; i <= 21; i++) {
@@ -94,8 +107,26 @@ export default {
     }
   },
   computed: {
+    cardListLength () {
+      if (!this.gameConfig) {
+        return null
+      }
+
+      return this.gameConfig[this.turnIdx].cardList.length
+    },
+    currentTurn () {
+      if (!this.gameConfig) {
+        return null
+      }
+
+      return this.gameConfig[this.turnIdx]
+    },
     currentCard () {
-      let cl = cardList[this.cardIdx];
+      if (!this.gameConfig) {
+        return null
+      }
+
+      let cl = this.gameConfig[this.turnIdx].cardList[this.cardIdx];
       let newMatrix = shapes.get(cl.shape);
       for (let i = 0; i < this.cardRotate; i++) {
         newMatrix = shapes.rotate(newMatrix)
@@ -198,6 +229,8 @@ export default {
         this.getShapeCoords(i, j).forEach((coord) => {
           this.$set(this.map, coord, this.currentCard.type)
         });
+
+        db.ref(`gameConfig/${this.turnIdx}/playersPlayed/${this.playerId}`).set(true)
       }
     },
     hoverable (i, j) {

@@ -1,5 +1,5 @@
 <template>
-  <section class="hero">
+<section class="hero">
   <div class="hero-body">
     <div class="container">
       <div class="columns">
@@ -24,7 +24,7 @@
           <div class="card" v-if="currentCard">
             <div class="card-content">
               <div class="tile is-ancestor">
-                <div class="tile is-parent is-child has-background-info">
+                <div class="tile is-parent is-child">
                   <table class="game">
                     <tr v-for="row in currentCard.shape">
                       <td v-for="cell in row"
@@ -34,13 +34,13 @@
                   </table>
                 </div>
                 <div class="tile is-parent is-vertical">
-                  <div class="tile is-child has-background-warning">
+                  <div class="tile is-child">
                     <button @click="cardFlip = 1 - cardFlip"
                             class="button is-fullwidth">
                       Flip
                     </button>
                   </div>
-                  <div class="tile is-child has-background-success">
+                  <div class="tile is-child">
                     <button @click="cardRotate = (cardRotate + 1) % 4"
                             class="button is-fullwidth">
                       Rotate
@@ -58,14 +58,30 @@
               </a>
             </div>
           </div>
-          <div class="level" v-if="currentTurn">
+          <div class="level mt-5" v-if="gameConfig && currentTurn">
             <div class="level-item"
-                 v-for="player in currentTurn.playersPlayed">
-              <div class="box">
-                {{player}}
+                 v-for="idx in gameConfig.totalPlayers">
+              <div class="notification is-success is-light"
+                   v-if="currentTurn.playersPlayed && currentTurn.playersPlayed[idx] != null">
+                {{ idx }}
+              </div>
+              <div class="notification is-default" v-else>
+                {{ idx }}
               </div>
             </div>
-
+          </div>
+          <div class="box mt-5" v-if="gameConfig && currentTurn">
+            <button class="button is-fullwidth is-success"
+                    @click="nextTurn"
+                    v-if="allPlayersPlayed">
+              Go to Next Turn
+            </button>
+            <span v-else-if="currentTurn.playersPlayed && currentTurn.playersPlayed[playerId]">
+              Waiting for others...
+            </span>
+            <span v-else>
+              It's your turn
+            </span>
           </div>
         </div>
       </div>
@@ -79,12 +95,10 @@ import shapes from '../data/shapes'
 import db from '../firebase/init'
 
 export default {
-  name: 'HelloWorld',
   data () {
     return {
-      gameId: "ABC",
       gameConfig: null,
-      playerId: 0,
+      playerId: 1,
       cardIdx: 0,
       turnIdx: 0,
       cardFlip: 0,
@@ -93,11 +107,12 @@ export default {
       map: {}
     }
   },
+  props: [ 'gameId' ],
   watch: {
     gameId: {
       immediate: true,
       handler () {
-        this.$rtdbBind('gameConfig', db.ref(this.gameId + '/gameConfig'))
+        this.$rtdbBind('gameConfig', db.ref(this.gameId))
       }
     }
   },
@@ -113,26 +128,26 @@ export default {
     }
   },
   computed: {
-    cardListLength () {
-      if (!this.gameConfig) {
-        return null
-      }
-
-      return this.gameConfig[this.turnIdx].cardList.length
-    },
     currentTurn () {
       if (!this.gameConfig) {
         return null
       }
 
-      return this.gameConfig[this.turnIdx]
+      return this.gameConfig.turns[this.turnIdx]
+    },
+    cardListLength () {
+      if (!this.gameConfig) {
+        return null
+      }
+
+      return this.currentTurn.cardList.length
     },
     currentCard () {
       if (!this.gameConfig) {
         return null
       }
 
-      let cl = this.gameConfig[this.turnIdx].cardList[this.cardIdx];
+      let cl = this.currentTurn.cardList[this.cardIdx];
       let newMatrix = shapes.get(cl.shape);
       for (let i = 0; i < this.cardRotate; i++) {
         newMatrix = shapes.rotate(newMatrix)
@@ -146,6 +161,23 @@ export default {
         type: cl.type,
         shape: newMatrix
       }
+    },
+    allPlayersPlayed () {
+      if (!this.gameConfig) {
+        return null
+      }
+
+      if (!this.currentTurn.playersPlayed) {
+        return false;
+      }
+
+      if ([...Array(this.gameConfig.totalPlayers).keys()].some((idx) => {
+        return this.currentTurn.playersPlayed[idx + 1] == null
+      })) {
+        return false;
+      }
+
+      return true;
     }
   },
   methods: {
@@ -208,6 +240,12 @@ export default {
       if (!this.gameConfig) {
         return false;
       }
+
+      if (this.currentTurn.playersPlayed &&
+          this.currentTurn.playersPlayed[this.playerId] != null) {
+        return false;
+      }
+
       if (i % 2 == 1 || j % 2 == 1) {
         return false;
       }
@@ -233,6 +271,9 @@ export default {
 
       return out;
     },
+    getMoveId (i, j) {
+      return this.getElemId(i, j) + `-${this.cardIdx}-${this.cardFlip}-${this.cardRotate}`
+    },
     clickCoord (i, j) {
       if (this.clickable(i, j)) {
         this.getShapeCoords(i, j).forEach((coord) => {
@@ -240,8 +281,8 @@ export default {
         });
 
         db.
-          ref(`${this.gameId}/gameConfig/${this.turnIdx}/playersPlayed/${this.playerId}`).
-          set(this.getElemId(i, j))
+          ref(`${this.gameId}/turns/${this.turnIdx}/playersPlayed/${this.playerId}`).
+          set(this.getMoveId(i, j))
       }
     },
     hoverable (i, j) {
@@ -261,6 +302,12 @@ export default {
       document.querySelectorAll('table.game td.hover').forEach((elem) => {
         elem.classList.remove('hover');
       });
+    },
+    nextTurn () {
+      this.cardIdx = 0;
+      this.cardFlip = 0;
+      this.cardRotate = 0;
+      this.turnIdx += 1;
     }
   }
 }

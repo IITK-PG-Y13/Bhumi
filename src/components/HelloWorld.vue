@@ -37,13 +37,13 @@
                   <div class="tile is-child has-background-warning">
                     <button @click="cardFlip = 1 - cardFlip"
                             class="button is-fullwidth">
-                      Flip {{cardFlip}}
+                      Flip
                     </button>
                   </div>
                   <div class="tile is-child has-background-success">
                     <button @click="cardRotate = (cardRotate + 1) % 4"
                             class="button is-fullwidth">
-                      Rotate {{cardRotate}}
+                      Rotate
                     </button>
                   </div>
                 </div>
@@ -82,6 +82,7 @@ export default {
   name: 'HelloWorld',
   data () {
     return {
+      gameId: "ABC",
       gameConfig: null,
       playerId: 0,
       cardIdx: 0,
@@ -92,8 +93,13 @@ export default {
       map: {}
     }
   },
-  firebase: {
-    gameConfig: db.ref('gameConfig')
+  watch: {
+    gameId: {
+      immediate: true,
+      handler () {
+        this.$rtdbBind('gameConfig', db.ref(this.gameId + '/gameConfig'))
+      }
+    }
   },
   created () {
     for (let i = 0; i <= 21; i++) {
@@ -199,6 +205,9 @@ export default {
       return coords;
     },
     clickable (i, j) {
+      if (!this.gameConfig) {
+        return false;
+      }
       if (i % 2 == 1 || j % 2 == 1) {
         return false;
       }
@@ -230,7 +239,9 @@ export default {
           this.$set(this.map, coord, this.currentCard.type)
         });
 
-        db.ref(`gameConfig/${this.turnIdx}/playersPlayed/${this.playerId}`).set(true)
+        db.
+          ref(`${this.gameId}/gameConfig/${this.turnIdx}/playersPlayed/${this.playerId}`).
+          set(this.getElemId(i, j))
       }
     },
     hoverable (i, j) {
@@ -247,7 +258,7 @@ export default {
       }
     },
     unHover () {
-      document.querySelectorAll('td.hover').forEach((elem) => {
+      document.querySelectorAll('table.game td.hover').forEach((elem) => {
         elem.classList.remove('hover');
       });
     }

@@ -4,14 +4,18 @@
     <div class="container" v-if="gameList">
       <div class="columns is-multiline">
         <div class="column is-12" v-if="activeGames.length > 0">
-          Your Active Games
+          <h2 class="title is-4">
+            Your Active Games
+          </h2>
         </div>
         <div class="column is-6"
              v-for="key in activeGames">
           <game-card :gameId="key[0]" :gameData="key[1]"></game-card>
         </div>
         <div class="column is-12">
-          Open Games
+          <h2 class="title is-4">
+            Open Games
+          </h2>
         </div>
         <div class="column is-6"
              v-for="key in draftGames">

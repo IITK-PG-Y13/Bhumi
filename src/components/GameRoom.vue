@@ -21,41 +21,13 @@
           </table>
         </div>
         <div class="column is-6">
-          <div class="card" v-if="currentCard">
-            <div class="card-content">
-              <div class="tile is-ancestor">
-                <div class="tile is-parent is-child">
-                  <table class="game">
-                    <tr v-for="row in currentCard.shape">
-                      <td v-for="cell in row"
-                          :class="(cell ? currentCard.type : null)">
-                      </td>
-                    </tr>
-                  </table>
-                </div>
-                <div class="tile is-parent is-vertical">
-                  <div class="tile is-child">
-                    <button @click="cardFlip = 1 - cardFlip"
-                            class="button is-fullwidth">
-                      Flip
-                    </button>
-                  </div>
-                  <div class="tile is-child">
-                    <button @click="cardRotate = (cardRotate + 1) % 4"
-                            class="button is-fullwidth">
-                      Rotate
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div class="card-footer">
-              <a class="card-footer-item" @click="cardIdx = (cardListLength + cardIdx - 1) % cardListLength">
-                Prev
-              </a>
-              <a class="card-footer-item" @click="cardIdx = (cardIdx + 1) % cardListLength">
-                Next
-              </a>
+          <div class="columns is-multiline">
+            <div class="column is-6"
+                 v-for="idx in cardListLength">
+              <show-card :cardIdx="idx - 1"
+                         :cardAt="cardAt"
+                         :selected="cardIdx == idx - 1"
+                         @select="selectCard"></show-card>
             </div>
           </div>
           <div class="tile is-ancestor is-parent mt-5">
@@ -96,6 +68,7 @@
 <script>
 import shapes from '../data/shapes'
 import db from '../firebase/init'
+import ShowCard from './gameroom/ShowCard.vue'
 
 export default {
   data () {
@@ -110,6 +83,9 @@ export default {
       hover: [],
       map: {}
     }
+  },
+  components: {
+    ShowCard
   },
   props: [ 'gameId' ],
   watch: {
@@ -144,20 +120,7 @@ export default {
       return this.currentTurn.cardList.length
     },
     currentCard () {
-      let cl = this.currentTurn.cardList[this.cardIdx];
-      let newMatrix = shapes.get(cl.shape);
-      for (let i = 0; i < this.cardRotate; i++) {
-        newMatrix = shapes.rotate(newMatrix)
-      }
-
-      if (this.cardFlip > 0) {
-        newMatrix = shapes.flip(newMatrix);
-      }
-
-      return {
-        type: cl.type,
-        shape: newMatrix
-      }
+      return this.cardAt(this.cardIdx, this.cardFlip, this.cardRotate)
     },
     allPlayersPlayed () {
       if (!this.currentTurn.playersPlayed) {
@@ -192,15 +155,45 @@ export default {
       }
 
       if (this.gameConfig.currentTurn > 0) {
+        let unparseTurn = null
+        if (this.gameConfig.turns[this.gameConfig.currentTurn].playersPlayed &&
+            this.gameConfig.turns[this.gameConfig.currentTurn].playersPlayed[this.playerIdx]) {
+
+          unparseTurn = this.gameConfig.currentTurn
+        } else {
+          unparseTurn = this.gameConfig.currentTurn - 1
+        }
         this.map = JSON.parse(
                               this.
                                 gameConfig.
-                                turns[this.gameConfig.currentTurn - 1].
+                                turns[unparseTurn].
                                 playersPlayed[this.playerIdx]
         )
 
         this.turnIdx = this.gameConfig.currentTurn
       }
+    },
+    cardAt (idx, flip, rotate) {
+      let cl = this.currentTurn.cardList[idx];
+      let newMatrix = shapes.get(cl.shape);
+      for (let i = 0; i < rotate; i++) {
+        newMatrix = shapes.rotate(newMatrix)
+      }
+
+      if (flip > 0) {
+        newMatrix = shapes.flip(newMatrix);
+      }
+
+      return {
+        type: cl.type,
+        shape: newMatrix
+      }
+    },
+    selectCard (evt) {
+      console.log(evt)
+      this.cardFlip = evt.cardFlip
+      this.cardRotate = evt.cardRotate
+      this.cardIdx = evt.idx
     },
     getLevel (i, j) {
       let level = (i % 2 == 0 &&

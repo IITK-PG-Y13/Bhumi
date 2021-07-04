@@ -1,7 +1,7 @@
 <template>
 <section class="hero">
   <div class="hero-body">
-    <div class="container">
+    <div class="container" v-if="gameConfig && loaded">
       <div class="columns">
         <div class="column is-6">
           <table class="game">
@@ -58,19 +58,19 @@
               </a>
             </div>
           </div>
-          <div class="level mt-5" v-if="gameConfig && currentTurn">
-            <div class="level-item"
+          <div class="tile is-ancestor is-parent mt-5">
+            <div class="tile is-child"
                  v-for="idx in gameConfig.totalPlayers">
-              <div class="notification is-success is-light"
+              <div class="notification is-success is-light m-1"
                    v-if="currentTurn.playersPlayed && currentTurn.playersPlayed[idx] != null">
                 {{ idx }}
               </div>
-              <div class="notification is-default" v-else>
+              <div class="notification is-default m-1" v-else>
                 {{ idx }}
               </div>
             </div>
           </div>
-          <div class="box mt-5" v-if="gameConfig && currentTurn">
+          <div class="box mt-5">
             <button class="button is-fullwidth is-success"
                     @click="nextTurn"
                     v-if="allPlayersPlayed">
@@ -86,6 +86,9 @@
         </div>
       </div>
     </div>
+    <div class="container" v-else>
+      Loading...
+    </div>
   </div>
 </section>
 </template>
@@ -97,6 +100,7 @@ import db from '../firebase/init'
 export default {
   data () {
     return {
+      loaded: false,
       gameConfig: null,
       playerId: 1,
       cardIdx: 0,
@@ -112,41 +116,32 @@ export default {
     gameId: {
       immediate: true,
       handler () {
-        this.$rtdbBind('gameConfig', db.ref(this.gameId))
+        this.$rtdbBind('gameConfig', db.ref(this.gameId)).then(() => {
+          // Loaded
+          if (window.localStorage.getItem('playerId') == null ||
+              this.gameConfig.players == null ||
+              !this.gameConfig.players.includes(window.localStorage.getItem('playerId'))) {
+
+            this.$router.push('/')
+            return;
+          }
+
+          this.setGameData();
+          this.loaded = true;
+        });
       }
     }
   },
   created () {
-    for (let i = 0; i <= 21; i++) {
-      for (let j = 0; j <= 21; j++) {
-        if (i >= 11 && j == 11 && i < 21) {
-          this.$set(this.map, [i, j], 'h-wall')
-        } else if (i == 11 && j < 11 && j > 1) {
-          this.$set(this.map, [i, j], 'v-wall')
-        }
-      }
-    }
   },
   computed: {
     currentTurn () {
-      if (!this.gameConfig) {
-        return null
-      }
-
       return this.gameConfig.turns[this.turnIdx]
     },
     cardListLength () {
-      if (!this.gameConfig) {
-        return null
-      }
-
       return this.currentTurn.cardList.length
     },
     currentCard () {
-      if (!this.gameConfig) {
-        return null
-      }
-
       let cl = this.currentTurn.cardList[this.cardIdx];
       let newMatrix = shapes.get(cl.shape);
       for (let i = 0; i < this.cardRotate; i++) {
@@ -163,10 +158,6 @@ export default {
       }
     },
     allPlayersPlayed () {
-      if (!this.gameConfig) {
-        return null
-      }
-
       if (!this.currentTurn.playersPlayed) {
         return false;
       }
@@ -181,6 +172,19 @@ export default {
     }
   },
   methods: {
+    setGameData () {
+      for (let i = 0; i <= 21; i++) {
+        for (let j = 0; j <= 21; j++) {
+          if (i >= 11 && j == 11 && i < 21) {
+            this.$set(this.map, [i, j], 'h-wall')
+          } else if (i == 11 && j < 11 && j > 1) {
+            this.$set(this.map, [i, j], 'v-wall')
+          }
+        }
+      }
+
+      this.playerId = this.gameConfig.players.indexOf(window.localStorage.getItem('playerId'))
+    },
     getLevel (i, j) {
       let level = (i % 2 == 0 &&
               i >= 12 && i <= 20 &&

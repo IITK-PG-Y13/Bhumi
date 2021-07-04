@@ -63,10 +63,10 @@
                  v-for="idx in gameConfig.totalPlayers">
               <div class="notification is-success is-light m-1"
                    v-if="currentTurn.playersPlayed && currentTurn.playersPlayed[idx] != null">
-                {{ idx }}
+                {{ idx == playerIdx ? "You" : "Player " + idx }}
               </div>
               <div class="notification is-default m-1" v-else>
-                {{ idx }}
+                {{ idx == playerIdx ? "You" : "Player " + idx }}
               </div>
             </div>
           </div>
@@ -76,7 +76,7 @@
                     v-if="allPlayersPlayed">
               Go to Next Turn
             </button>
-            <span v-else-if="currentTurn.playersPlayed && currentTurn.playersPlayed[playerId]">
+            <span v-else-if="currentTurn.playersPlayed && currentTurn.playersPlayed[playerIdx]">
               Waiting for others...
             </span>
             <span v-else>
@@ -102,7 +102,7 @@ export default {
     return {
       loaded: false,
       gameConfig: null,
-      playerId: 1,
+      playerIdx: 1,
       cardIdx: 0,
       turnIdx: 0,
       cardFlip: 0,
@@ -120,6 +120,8 @@ export default {
           // Loaded
           if (window.localStorage.getItem('playerId') == null ||
               this.gameConfig.players == null ||
+              !this.gameConfig.started ||
+              !this.gameConfig.active ||
               !this.gameConfig.players.includes(window.localStorage.getItem('playerId'))) {
 
             this.$router.push('/')
@@ -183,7 +185,22 @@ export default {
         }
       }
 
-      this.playerId = this.gameConfig.players.indexOf(window.localStorage.getItem('playerId'))
+      this.playerIdx = this.gameConfig.players.indexOf(window.localStorage.getItem('playerId'))
+
+      if (this.gameConfig.initMap && this.gameConfig.currentTurn == 0) {
+        this.map = JSON.parse(this.gameConfig.initMap)
+      }
+
+      if (this.gameConfig.currentTurn > 0) {
+        this.map = JSON.parse(
+                              this.
+                                gameConfig.
+                                turns[this.gameConfig.currentTurn - 1].
+                                playersPlayed[this.playerIdx]
+        )
+
+        this.turnIdx = this.gameConfig.currentTurn
+      }
     },
     getLevel (i, j) {
       let level = (i % 2 == 0 &&
@@ -246,7 +263,7 @@ export default {
       }
 
       if (this.currentTurn.playersPlayed &&
-          this.currentTurn.playersPlayed[this.playerId] != null) {
+          this.currentTurn.playersPlayed[this.playerIdx] != null) {
         return false;
       }
 
@@ -275,8 +292,8 @@ export default {
 
       return out;
     },
-    getMoveId (i, j) {
-      return this.getElemId(i, j) + `-${this.cardIdx}-${this.cardFlip}-${this.cardRotate}`
+    getGameMap () {
+      return JSON.stringify(this.map);
     },
     clickCoord (i, j) {
       if (this.clickable(i, j)) {
@@ -285,8 +302,13 @@ export default {
         });
 
         db.
-          ref(`${this.gameId}/turns/${this.turnIdx}/playersPlayed/${this.playerId}`).
-          set(this.getMoveId(i, j))
+          ref(`${this.gameId}/turns/${this.turnIdx}/playersPlayed/${this.playerIdx}`).
+          set(this.getGameMap()).then(() => {
+            if (this.allPlayersPlayed) {
+              db.ref(`${this.gameId}/currentTurn`).set(this.turnIdx + 1)
+              // this.nextTurn()
+            }
+        })
       }
     },
     hoverable (i, j) {

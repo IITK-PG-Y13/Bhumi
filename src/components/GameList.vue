@@ -37,6 +37,17 @@ import GameCard from './gamelist/GameCard.vue'
 import create from '../data/create'
 import { v4 } from 'uuid'
 
+function uuid6digit () {
+  let str = "QWERTYUIOPASDFGHJKLZXCVBNM"
+  let out = ""
+
+  for (let i = 0; i < 6; i++) {
+    out += str[Math.floor(Math.random() * 26)]
+  }
+
+  return out;
+}
+
 export default {
   data () {
     return {
@@ -74,7 +85,9 @@ export default {
     createNewGame () {
       let outputJson = create()
       outputJson.players = [ null, window.localStorage.getItem('playerId') ]
-      db.ref('DEF').set(outputJson)
+
+      let gameId = uuid6digit()
+      db.ref(gameId).set(outputJson)
     }
   }
 }

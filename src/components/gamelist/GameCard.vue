@@ -3,12 +3,16 @@
     <div class="tile is-ancestor is-parent">
       <div class="tile is-child" v-for="idx in gameData.totalPlayers">
           <div class="notification m-1 is-info is-light" v-if="gameData.players && gameData.players[idx]">
-            {{ gameData.players[idx] }}
+            {{ idx === playerIdx ? "You" : "Player " + idx }}
 
           </div>
-          <div class="notification m-1 is-default" v-else>
+          <div class="notification m-1 is-default is-italic" v-else>
+            &lt;empty&gt;
           </div>
       </div>
+    </div>
+    <div class="tile is-ancestor is-parent">
+      Game Link: <code>{{ gameURL }}</code>
     </div>
     <div class="tile is-ancestor is-parent" v-if="canJoin()">
       <button class="button is-success is-fullwidth" @click="join">
@@ -36,6 +40,14 @@ import db from '../../firebase/init'
 
 export default {
   props: ['gameId', 'gameData'],
+  computed: {
+    playerIdx () {
+      return this.gameData.players.indexOf(window.localStorage.getItem('playerId'))
+    },
+    gameURL () {
+      return window.location.origin + "/#/" + this.gameId
+    }
+  },
   methods: {
     canJoin () {
       if (this.gameData.started) {

@@ -21,6 +21,11 @@
           </table>
         </div>
         <div class="column is-6">
+          <div class="columns">
+            <div class="column">
+              Move {{ turnIdx + 1 }} / {{ gameConfig.turns.length }}
+            </div>
+          </div>
           <div class="columns is-multiline">
             <div class="column is-6"
                  v-for="idx in cardListLength">
@@ -100,7 +105,12 @@ export default {
               !this.gameConfig.active ||
               !this.gameConfig.players.includes(window.localStorage.getItem('playerId'))) {
 
-            this.$router.push('/')
+            this.$router.push({
+              path: '/',
+              query: {
+                src: this.gameId
+              }
+            })
             return;
           }
 

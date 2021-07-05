@@ -19,7 +19,7 @@
         </div>
         <div class="column is-6"
              v-for="key in draftGames">
-          <game-card :gameId="key[0]" :gameData="key[1]"></game-card>
+          <game-card :gameId="key[0]" :gameData="key[1]" :highlight="key[0] == highlight"></game-card>
         </div>
         <div class="column is-12">
           <button class="button is-success" @click="createNewGame">
@@ -55,7 +55,8 @@ function uuid6digit () {
 export default {
   data () {
     return {
-      gameList: null
+      gameList: null,
+      highlight: null
     }
   },
   components: {
@@ -63,6 +64,13 @@ export default {
   },
   firebase: {
     gameList: db.ref('/')
+  },
+  beforeRouteEnter (to, from, next) {
+    next((vm) => {
+      if (to.query) {
+        vm.highlight = to.query.src
+      }
+    })
   },
   created () {
     if (window.localStorage.getItem('playerId') == null) {

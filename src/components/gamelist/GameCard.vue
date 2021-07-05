@@ -1,5 +1,5 @@
 <template>
-  <div class="box">
+  <div :class="{box: true, 'has-background-danger-light': isHighlight}">
     <div class="tile is-ancestor is-parent">
       <div class="tile is-child" v-for="idx in gameData.totalPlayers">
           <div class="notification m-1 is-info is-light" v-if="gameData.players && gameData.players[idx]">
@@ -39,7 +39,12 @@
 import db from '../../firebase/init'
 
 export default {
-  props: ['gameId', 'gameData'],
+  props: ['gameId', 'gameData', 'highlight'],
+  data () {
+    return {
+      isHighlight: this.highlight
+    }
+  },
   computed: {
     playerIdx () {
       return this.gameData.players.indexOf(window.localStorage.getItem('playerId'))
@@ -47,6 +52,11 @@ export default {
     gameURL () {
       return window.location.origin + "/#/" + this.gameId
     }
+  },
+  mounted () {
+    setTimeout(() => {
+      this.isHighlight = false;
+    }, 5000)
   },
   methods: {
     canJoin () {

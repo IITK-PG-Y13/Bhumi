@@ -63,7 +63,7 @@ export default {
     GameCard
   },
   firebase: {
-    gameList: db.ref('/')
+    gameList: db.ref('games')
   },
   beforeRouteEnter (to, from, next) {
     next((vm) => {
@@ -99,7 +99,7 @@ export default {
       outputJson.players = [ null, window.localStorage.getItem('playerId') ]
 
       let gameId = uuid6digit()
-      db.ref(gameId).set(outputJson)
+      db.ref('games/' + gameId).set(outputJson)
     }
   }
 }

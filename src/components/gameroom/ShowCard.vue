@@ -1,6 +1,6 @@
 <template>
-  <div class="card">
-    <div :class="{'card-content': true, pointer: true, 'has-background-success-light': selected}"
+  <div :class="{card: true, 'has-border-success': selected}">
+    <div class="card-content pointer"
          @click="selectCard">
       <table class="game selector">
         <tr v-for="row in currentCard.shape">
@@ -67,5 +67,9 @@ table.selector {
 
 .pointer {
   cursor: pointer;
+}
+
+.has-border-success {
+  border: 2px solid #48c78e;
 }
 </style>

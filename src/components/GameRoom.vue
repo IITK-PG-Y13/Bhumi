@@ -4,12 +4,18 @@
     <div class="container" v-if="gameConfig && loaded">
       <div class="columns">
         <div class="column is-6">
+          <!--
+          <board :getClass="getClass"
+                 :hoverCoord="hoverCoord"
+                 :unHover="unHover"
+                 clickCoord="clickCoord"></board>
+          -->
           <table class="game">
             <tr v-for="idx in 21">
               <td v-for="jdx in 21"
                   :ref="'coord-' + idx + ',' + jdx"
                   :class="getClass(idx, jdx)"
-                  @mouseover="hoverCoord(idx, jdx, $event)"
+                  @mouseover="hoverCoord(idx, jdx)"
                   @mouseout="unHover"
                   @click="clickCoord(idx, jdx)">
 
@@ -74,6 +80,7 @@
 import shapes from '../data/shapes'
 import db from '../firebase/init'
 import ShowCard from './gameroom/ShowCard.vue'
+// import Board from './gameroom/Board.vue'
 
 export default {
   data () {
@@ -90,14 +97,15 @@ export default {
     }
   },
   components: {
-    ShowCard
+    ShowCard,
+//    Board
   },
   props: [ 'gameId' ],
   watch: {
     gameId: {
       immediate: true,
       handler () {
-        this.$rtdbBind('gameConfig', db.ref(this.gameId)).then(() => {
+        this.$rtdbBind('gameConfig', db.ref('games/' + this.gameId)).then(() => {
           // Loaded
           if (window.localStorage.getItem('playerId') == null ||
               this.gameConfig.players == null ||
@@ -305,10 +313,10 @@ export default {
         });
 
         db.
-          ref(`${this.gameId}/turns/${this.turnIdx}/playersPlayed/${this.playerIdx}`).
+          ref(`games/${this.gameId}/turns/${this.turnIdx}/playersPlayed/${this.playerIdx}`).
           set(this.getGameMap()).then(() => {
             if (this.allPlayersPlayed) {
-              db.ref(`${this.gameId}/currentTurn`).set(this.turnIdx + 1)
+              db.ref(`games/${this.gameId}/currentTurn`).set(this.turnIdx + 1)
               // this.nextTurn()
             }
         })
@@ -317,7 +325,7 @@ export default {
     hoverable (i, j) {
       return this.clickable (i, j)
     },
-    hoverCoord (i, j, e) {
+    hoverCoord (i, j) {
       if (this.hoverable(i, j)) {
         this.getShapeCoords(i, j).forEach((coord) => {
           let el = this.getElem(...coord);

@@ -76,7 +76,7 @@ export default {
     },
     join () {
       let playerIdx = this.gameData.players.length
-      db.ref(`${this.gameId}/players/${playerIdx}`).set(window.localStorage.getItem('playerId'))
+      db.ref(`games/${this.gameId}/players/${playerIdx}`).set(window.localStorage.getItem('playerId'))
     },
     canStart () {
       if (this.gameData.started) {
@@ -92,7 +92,7 @@ export default {
       return false;
     },
     start () {
-      db.ref(this.gameId).update({
+      db.ref('games/' + this.gameId).update({
         totalPlayers: this.gameData.players.length - 1,
         started: true
       }).then(() => {

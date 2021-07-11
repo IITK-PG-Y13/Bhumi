@@ -4,27 +4,7 @@
     <div class="container" v-if="gameConfig && loaded">
       <div class="columns">
         <div class="column is-6">
-          <!--
-          <board :getClass="getClass"
-                 :hoverCoord="hoverCoord"
-                 :unHover="unHover"
-                 clickCoord="clickCoord"></board>
-          -->
-          <table class="game">
-            <tr v-for="idx in 21">
-              <td v-for="jdx in 21"
-                  :ref="'coord-' + idx + ',' + jdx"
-                  :class="getClass(idx, jdx)"
-                  @mouseover="hoverCoord(idx, jdx)"
-                  @mouseout="unHover"
-                  @click="clickCoord(idx, jdx)">
-
-                  <span v-if="idx % 2 == 0 && jdx % 2 == 0">
-                    {{idx}}, {{jdx}}
-                  </span>
-              </td>
-            </tr>
-          </table>
+          <board :map="map"></board>
         </div>
         <div class="column is-6">
           <div class="columns">
@@ -80,7 +60,7 @@
 import shapes from '../data/shapes'
 import db from '../firebase/init'
 import ShowCard from './gameroom/ShowCard.vue'
-// import Board from './gameroom/Board.vue'
+import Board from './gameroom/Board.vue'
 
 export default {
   data () {
@@ -98,7 +78,7 @@ export default {
   },
   components: {
     ShowCard,
-//    Board
+    Board
   },
   props: [ 'gameId' ],
   watch: {
@@ -208,7 +188,6 @@ export default {
       }
     },
     selectCard (evt) {
-      console.log(evt)
       this.cardFlip = evt.cardFlip
       this.cardRotate = evt.cardRotate
       this.cardIdx = evt.idx
@@ -220,40 +199,6 @@ export default {
               j >= 2 && j <= 10) ? 1 : 0;
 
       return level;
-    },
-    getElemId (i, j) {
-      return 'coord-' + i + ',' + j;
-    },
-    getElem (i, j) {
-      let el = this.$refs[this.getElemId(i, j)]
-      if (el == null) {
-        return false;
-      } else {
-        return el[0]
-      }
-    },
-    getClass (i, j) {
-      let classes = []
-
-      if (i % 2 == 1) {
-        classes.push('h-wall-blank')
-      }
-      if (j % 2 == 1) {
-        classes.push('v-wall-blank')
-      }
-
-      if (this.map[[i, j]] != null) {
-        classes.push(this.map[[i, j]])
-      }
-
-      if (classes.length > 0) {
-        return classes
-      } else {
-        if (i > 11 && j <= 11) {
-          return 'darkwhite'
-        }
-        return 'white'
-      }
     },
     getShapeCoords (i, j) {
       let coords = [];
@@ -321,24 +266,6 @@ export default {
             }
         })
       }
-    },
-    hoverable (i, j) {
-      return this.clickable (i, j)
-    },
-    hoverCoord (i, j) {
-      if (this.hoverable(i, j)) {
-        this.getShapeCoords(i, j).forEach((coord) => {
-          let el = this.getElem(...coord);
-          if (el) {
-            el.classList.add('hover');
-          }
-        });
-      }
-    },
-    unHover () {
-      document.querySelectorAll('table.game td.hover').forEach((elem) => {
-        elem.classList.remove('hover');
-      });
     },
     nextTurn () {
       this.cardIdx = 0;

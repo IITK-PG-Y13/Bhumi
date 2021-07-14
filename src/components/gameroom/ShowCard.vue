@@ -59,7 +59,7 @@ export default {
 }
 </script>
 
-<style>
+<style lang="scss">
 table.selector {
   margin-left: auto;
   margin-right: auto;
@@ -71,5 +71,15 @@ table.selector {
 
 .has-border-success {
   border: 2px solid #48c78e;
+  position: relative;
+
+  &:before {
+    content: "\2713";
+    font-size: 2rem;
+    color: #48c78e;
+    position: absolute;
+    left: 5px;
+    top: 0;
+  }
 }
 </style>

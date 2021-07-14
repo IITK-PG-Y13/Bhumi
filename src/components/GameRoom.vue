@@ -4,7 +4,7 @@
     <div class="container" v-if="gameConfig && loaded">
       <div class="columns">
         <div class="column is-6">
-          <board :map="map"></board>
+          <board :map="map" :currentCard="currentCard"></board>
         </div>
         <div class="column is-6">
           <div class="columns">
@@ -67,7 +67,7 @@ export default {
     return {
       loaded: false,
       gameConfig: null,
-      playerIdx: 1,
+      playerIdx: null,
       cardIdx: 0,
       turnIdx: 0,
       cardFlip: 0,
@@ -99,12 +99,12 @@ export default {
                 src: this.gameId
               }
             })
-            return;
+            return
           }
 
-          this.setGameData();
-          this.loaded = true;
-        });
+          this.setGameData()
+          this.loaded = true
+        })
       }
     }
   },
@@ -122,16 +122,16 @@ export default {
     },
     allPlayersPlayed () {
       if (!this.currentTurn.playersPlayed) {
-        return false;
+        return false
       }
 
       if ([...Array(this.gameConfig.totalPlayers).keys()].some((idx) => {
         return this.currentTurn.playersPlayed[idx + 1] == null
       })) {
-        return false;
+        return false
       }
 
-      return true;
+      return true
     }
   },
   methods: {
@@ -172,14 +172,14 @@ export default {
       }
     },
     cardAt (idx, flip, rotate) {
-      let cl = this.currentTurn.cardList[idx];
-      let newMatrix = shapes.get(cl.shape);
+      let cl = this.currentTurn.cardList[idx]
+      let newMatrix = shapes.get(cl.shape)
       for (let i = 0; i < rotate; i++) {
         newMatrix = shapes.rotate(newMatrix)
       }
 
       if (flip > 0) {
-        newMatrix = shapes.flip(newMatrix);
+        newMatrix = shapes.flip(newMatrix)
       }
 
       return {
@@ -192,86 +192,40 @@ export default {
       this.cardRotate = evt.cardRotate
       this.cardIdx = evt.idx
     },
-    getLevel (i, j) {
-      let level = (i % 2 == 0 &&
-              i >= 12 && i <= 20 &&
-              j % 2 == 0 &&
-              j >= 2 && j <= 10) ? 1 : 0;
-
-      return level;
-    },
-    getShapeCoords (i, j) {
-      let coords = [];
-
-      this.currentCard.shape.forEach((row, idx) => {
-        row.forEach((cell, jdx) => {
-          if (cell == 1) {
-            coords.push([i + 2 * idx - 2, j + 2 * jdx - 2])
-          }
-        });
-      });
-
-      return coords;
-    },
     clickable (i, j) {
       if (!this.gameConfig) {
-        return false;
+        return false
       }
 
       if (this.currentTurn.playersPlayed &&
           this.currentTurn.playersPlayed[this.playerIdx] != null) {
-        return false;
+        return false
       }
 
-      if (i % 2 == 1 || j % 2 == 1) {
-        return false;
-      }
-
-      let level = -1;
-      let out = true;
-      this.getShapeCoords(i, j).forEach((coord) => {
-        if (level == -1) {
-          level = this.getLevel(...coord)
-        } else if (level != this.getLevel(...coord)) {
-          out = false;
-        }
-
-        if (coord[0] > 20 || coord[1] > 20 ||
-            coord[0] < 2 || coord[1] < 2) {
-          out = false;
-        }
-
-        if (this.map[coord]) {
-          out = false;
-        }
-      });
-
-      return out;
+      return true
     },
     getGameMap () {
-      return JSON.stringify(this.map);
+      return JSON.stringify(this.map)
     },
-    clickCoord (i, j) {
-      if (this.clickable(i, j)) {
-        this.getShapeCoords(i, j).forEach((coord) => {
-          this.$set(this.map, coord, this.currentCard.type)
-        });
+    clickCoord (coords) {
+      coords.forEach((coord) => {
+        this.$set(this.map, coord, this.currentCard.type)
+      })
 
-        db.
-          ref(`games/${this.gameId}/turns/${this.turnIdx}/playersPlayed/${this.playerIdx}`).
-          set(this.getGameMap()).then(() => {
-            if (this.allPlayersPlayed) {
-              db.ref(`games/${this.gameId}/currentTurn`).set(this.turnIdx + 1)
-              // this.nextTurn()
-            }
-        })
-      }
+      db.
+        ref(`games/${this.gameId}/turns/${this.turnIdx}/playersPlayed/${this.playerIdx}`).
+        set(this.getGameMap()).then(() => {
+          if (this.allPlayersPlayed) {
+            db.ref(`games/${this.gameId}/currentTurn`).set(this.turnIdx + 1)
+            // this.nextTurn()
+          }
+      })
     },
     nextTurn () {
-      this.cardIdx = 0;
-      this.cardFlip = 0;
-      this.cardRotate = 0;
-      this.turnIdx += 1;
+      this.cardIdx = 0
+      this.cardFlip = 0
+      this.cardRotate = 0
+      this.turnIdx += 1
     }
   }
 }

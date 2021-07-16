@@ -61,8 +61,9 @@ export default {
       }
 
       return {
+        ...cl,
         type: type,
-        shape: newMatrix
+        shape: newMatrix,
       }
     },
     selectCard (evt) {

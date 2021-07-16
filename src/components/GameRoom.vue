@@ -54,6 +54,8 @@
             </span>
             <span v-else>
               It's your turn
+              <br/><br/>
+              <button class="button is-line is-fullwidth" @click="passTurn">Pass</button>
             </span>
           </div>
         </div>
@@ -146,10 +148,10 @@ export default {
       return true
     },
     recipeCount () {
-      if (!this.currentTurn.playerRecipes) {
+      if (!this.gameConfig.playerRecipes) {
         return {}
       }
-      return this.currentTurn.playerRecipes[this.playerIdx];
+      return this.gameConfig.playerRecipes[this.playerIdx];
     }
   },
   methods: {
@@ -203,10 +205,11 @@ export default {
 
       if (this.currentTurn.type == 'SEED') {
         if (this.map[[i, j]]) {
-          return false;
+          return false
         }
       } else if (this.currentTurn.type == 'HARVEST') {
-        return true;
+        if (!(this.map[[i, j]] && type == this.map[[i, j]]))
+          return false
       }
 
       return true
@@ -215,16 +218,35 @@ export default {
       return JSON.stringify(this.map)
     },
     clickCoord (coords) {
-      coords.forEach(({ coord, type }) => {
-        this.$set(this.map, coord, type)
-      })
+      if (this.currentTurn.type == 'SEED') {
+        coords.forEach(({ coord, type }) => {
+          this.$set(this.map, coord, type)
+        })
+      } else if (this.currentTurn.type == 'HARVEST') {
+        coords.forEach(({ coord, type }) => {
+          this.$set(this.map, coord, type + '-used')
+        })
 
+        let updatedRecipeCount = this.recipeCount[this.selectedCardInfo.name]
+        if (updatedRecipeCount == null) {
+          updatedRecipeCount = 1
+        } else {
+          updatedRecipeCount += 1
+        }
+
+        db.
+          ref(`games/${this.gameId}/playerRecipes/${this.playerIdx}/${this.selectedCardInfo.name}`).
+          set(updatedRecipeCount)
+      }
+
+      this.passTurn()
+    },
+    passTurn () {
       db.
         ref(`games/${this.gameId}/turns/${this.turnIdx}/playersPlayed/${this.playerIdx}`).
         set(this.getGameMap()).then(() => {
           if (this.allPlayersPlayed) {
             db.ref(`games/${this.gameId}/currentTurn`).set(this.turnIdx + 1)
-            // this.nextTurn()
           }
       })
     },
@@ -253,6 +275,26 @@ table.game td {
 
   &.blue {
     background-color: blue;
+  }
+
+  &.yellow-used {
+    background-color: yellow;
+    opacity: 0.2;
+  }
+
+  &.green-used {
+    background-color: green;
+    opacity: 0.2;
+  }
+
+  &.brown-used {
+    background-color: brown;
+    opacity: 0.2;
+  }
+
+  &.blue-used {
+    background-color: blue;
+    opacity: 0.2;
   }
 }
 </style>

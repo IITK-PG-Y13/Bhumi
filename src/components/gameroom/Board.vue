@@ -66,13 +66,13 @@ export default {
       }
 
       let out = true;
-      this.getShapeCoords(i, j).forEach(({ coord }) => {
+      this.getShapeCoords(i, j).forEach(({ coord, type }) => {
         if (coord[0] > 20 || coord[1] > 20 ||
             coord[0] < 2 || coord[1] < 2) {
           out = false
         }
 
-        if (!this.$parent.clickable(coord[0], coord[1])) {
+        if (!this.$parent.clickable(coord[0], coord[1], type)) {
           out = false
         }
       });

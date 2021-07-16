@@ -47,12 +47,29 @@ export default {
     ]
   },
   get (shape) {
-    return JSON.parse(JSON.stringify(this.shapes[shape]))
+    if (typeof shape == "string") {
+        return JSON.parse(JSON.stringify(this.shapes[shape]))
+    } else {
+        return JSON.parse(JSON.stringify(shape))
+    }
   },
   rotate (matrix) {
     return matrix[0].map((val, index) => matrix.map(row => row[index]).reverse());
   },
   flip (matrix) {
     return matrix.map((val, index) => val.map((v) => v).reverse());
+  },
+  getNew (shape, flip, rotate) {
+    let newMatrix = this.get(shape)
+
+    for (let i = 0; i < rotate; i++) {
+      newMatrix = this.rotate(newMatrix)
+    }
+
+    if (flip > 0) {
+      newMatrix = this.flip(newMatrix)
+    }
+
+    return newMatrix
   }
 }

@@ -4,21 +4,31 @@
     <div class="container" v-if="gameConfig && loaded">
       <div class="columns">
         <div class="column is-6">
-          <board :map="map" :currentCard="currentCard"></board>
-        </div>
-        <div class="column is-6">
-          <div class="columns">
-            <div class="column">
-              Move {{ turnIdx + 1 }} / {{ gameConfig.turns.length }}
+          <div class="columns is-multiline">
+            <div class="column is-12">
+              <board :map="map"
+                     :hoverData="selectedCardInfo"
+                     @click="clickCoord"></board>
+            </div>
+            <div class="column is-6" v-for="recipe in gameConfig.recipes">
+              <show-recipe :recipe="recipe" :recipeCount="recipeCount[recipe.name]"></show-recipe>
             </div>
           </div>
+        </div>
+        <div class="column is-6">
           <div class="columns is-multiline">
-            <div class="column is-6"
-                 v-for="idx in cardListLength">
-              <show-card :cardIdx="idx - 1"
-                         :cardAt="cardAt"
-                         :selected="cardIdx == idx - 1"
-                         @select="selectCard"></show-card>
+            <div class="column is-12">
+              Move {{ turnIdx + 1 }} / {{ gameConfig.turns.length }}
+            </div>
+            <div class="column is-12" v-if="currentTurn.type == 'SEED'">
+              <turn-cards :currentTurn="currentTurn"
+                          :recipes="this.currentTurn.cardList"
+                          @select="selectCard"></turn-cards>
+            </div>
+            <div class="column is-12" v-else-if="currentTurn.type == 'HARVEST'">
+              <turn-cards :currentTurn="currentTurn"
+                          :recipes="gameConfig.recipes"
+                          @select="selectCard"></turn-cards>
             </div>
           </div>
           <div class="tile is-ancestor is-parent mt-5">
@@ -58,9 +68,12 @@
 
 <script>
 import shapes from '../data/shapes'
+import recipes from '../data/recipes'
 import db from '../firebase/init'
 import ShowCard from './gameroom/ShowCard.vue'
+import ShowRecipe from './gameroom/ShowRecipe.vue'
 import Board from './gameroom/Board.vue'
+import TurnCards from './gameroom/TurnCards.vue'
 
 export default {
   data () {
@@ -68,17 +81,17 @@ export default {
       loaded: false,
       gameConfig: null,
       playerIdx: null,
-      cardIdx: 0,
       turnIdx: 0,
-      cardFlip: 0,
-      cardRotate: 0,
-      hover: [],
+      cardIdx: 0,
+      selectedCardInfo: {},
       map: {}
     }
   },
   components: {
     ShowCard,
-    Board
+    Board,
+    ShowRecipe,
+    TurnCards,
   },
   props: [ 'gameId' ],
   watch: {
@@ -108,17 +121,16 @@ export default {
       }
     }
   },
-  created () {
-  },
   computed: {
     currentTurn () {
       return this.gameConfig.turns[this.turnIdx]
     },
-    cardListLength () {
-      return this.currentTurn.cardList.length
-    },
     currentCard () {
-      return this.cardAt(this.cardIdx, this.cardFlip, this.cardRotate)
+      if (this.currentTurn.type == 'SEED') {
+        return this.currentTurn.cardList[this.cardIdx]
+      } else if (this.currentTurn.type == 'HARVEST') {
+        return this.gameConfig.recipes[this.cardIdx]
+      }
     },
     allPlayersPlayed () {
       if (!this.currentTurn.playersPlayed) {
@@ -132,20 +144,16 @@ export default {
       }
 
       return true
+    },
+    recipeCount () {
+      if (!this.currentTurn.playerRecipes) {
+        return {}
+      }
+      return this.currentTurn.playerRecipes[this.playerIdx];
     }
   },
   methods: {
     setGameData () {
-      for (let i = 0; i <= 21; i++) {
-        for (let j = 0; j <= 21; j++) {
-          if (i >= 11 && j == 11 && i < 21) {
-            this.$set(this.map, [i, j], 'h-wall')
-          } else if (i == 11 && j < 11 && j > 1) {
-            this.$set(this.map, [i, j], 'v-wall')
-          }
-        }
-      }
-
       this.playerIdx = this.gameConfig.players.indexOf(window.localStorage.getItem('playerId'))
 
       if (this.gameConfig.initMap && this.gameConfig.currentTurn == 0) {
@@ -161,6 +169,7 @@ export default {
         } else {
           unparseTurn = this.gameConfig.currentTurn - 1
         }
+
         this.map = JSON.parse(
                               this.
                                 gameConfig.
@@ -171,28 +180,18 @@ export default {
         this.turnIdx = this.gameConfig.currentTurn
       }
     },
-    cardAt (idx, flip, rotate) {
-      let cl = this.currentTurn.cardList[idx]
-      let newMatrix = shapes.get(cl.shape)
-      for (let i = 0; i < rotate; i++) {
-        newMatrix = shapes.rotate(newMatrix)
-      }
-
-      if (flip > 0) {
-        newMatrix = shapes.flip(newMatrix)
-      }
+    recipeAt (idx, flip, rotate) {
+      let cl = this.gameConfig.recipes[idx]
 
       return {
         type: cl.type,
-        shape: newMatrix
+        shape: shapes.getNew(cl.shape)
       }
     },
     selectCard (evt) {
-      this.cardFlip = evt.cardFlip
-      this.cardRotate = evt.cardRotate
-      this.cardIdx = evt.idx
+      this.selectedCardInfo = evt
     },
-    clickable (i, j) {
+    clickable (i, j, type) {
       if (!this.gameConfig) {
         return false
       }
@@ -202,14 +201,22 @@ export default {
         return false
       }
 
+      if (this.currentTurn.type == 'SEED') {
+        if (this.map[[i, j]]) {
+          return false;
+        }
+      } else if (this.currentTurn.type == 'HARVEST') {
+        return true;
+      }
+
       return true
     },
     getGameMap () {
       return JSON.stringify(this.map)
     },
     clickCoord (coords) {
-      coords.forEach((coord) => {
-        this.$set(this.map, coord, this.currentCard.type)
+      coords.forEach(({ coord, type }) => {
+        this.$set(this.map, coord, type)
       })
 
       db.
@@ -222,9 +229,8 @@ export default {
       })
     },
     nextTurn () {
+      this.selectedCardInfo = {}
       this.cardIdx = 0
-      this.cardFlip = 0
-      this.cardRotate = 0
       this.turnIdx += 1
     }
   }
@@ -233,52 +239,6 @@ export default {
 
 <style lang="scss">
 table.game td {
-  border: 1px solid black;
-  padding: 20px;
-  position: relative;
-
-  span {
-    position: absolute;
-    font-size: 8px;
-    left: 2px;
-    top: 2px;
-  }
-
-  &.h-wall-blank {
-    padding: 4px 0px;
-    border: 0px;
-  }
-
-  &.v-wall-blank {
-    padding: 0px 4px;
-    border: 0px;
-  }
-
-  &.v-wall, &.h-wall {
-    background-color: #666;
-  }
-
-  &.hover {
-    &:before {
-      content: "";
-      position: absolute;
-      left: 0;
-      right: 0;
-      top: 0;
-      bottom: 0;
-      background-color: #000;
-      opacity: 0.2;
-    }
-  }
-
-  &.white {
-    background-color: #eeeeee;
-  }
-
-  &.darkwhite {
-    background-color: #d5d5d5;
-  }
-
   &.yellow {
     background-color: yellow;
   }

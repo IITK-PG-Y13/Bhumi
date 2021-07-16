@@ -3,9 +3,9 @@
     <div class="card-content pointer"
          @click="selectCard">
       <table class="game selector">
-        <tr v-for="row in currentCard.shape">
-          <td v-for="cell in row"
-              :class="(cell ? currentCard.type : null)">
+        <tr v-for="(row, idx) in currentCard.shape">
+          <td v-for="(cell, jdx) in row"
+              :class="getCellType(idx, jdx)">
           </td>
         </tr>
       </table>
@@ -53,6 +53,17 @@ export default {
       this.cardFlip = 1 - this.cardFlip;
       if (this.selected) {
         this.selectCard()
+      }
+    },
+    getCellType (i, j) {
+      if (this.currentCard.shape[i][j] == 0) {
+        return "white"
+      }
+
+      if (typeof this.currentCard.type == "string") {
+        return this.currentCard.type
+      } else {
+        return this.currentCard.type[i][j]
       }
     }
   }

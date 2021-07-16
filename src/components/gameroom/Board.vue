@@ -1,5 +1,5 @@
 <template>
-  <table class="game">
+  <table class="game selector">
     <tr v-for="idx in 21">
       <td v-for="jdx in 21"
           :ref="'coord-' + idx + ',' + jdx"
@@ -18,7 +18,17 @@
 
 <script>
 export default {
-  props: ['map', 'currentCard'],
+  props: ['map', 'hoverData'],
+  data () {
+    return {
+      hoverClass: {}
+    }
+  },
+  computed: {
+    hoverShape () {
+      return this.hoverData.shape
+    }
+  },
   methods: {
     getElemId (i, j) {
       return 'coord-' + i + ',' + j;
@@ -32,75 +42,56 @@ export default {
       }
     },
     getClass (i, j) {
-      let classes = []
-
       if (i % 2 == 1) {
-        classes.push('h-wall-blank')
+        return 'h-wall-blank'
       }
+
       if (j % 2 == 1) {
-        classes.push('v-wall-blank')
+        return 'v-wall-blank'
       }
 
       if (this.map[[i, j]] != null) {
-        classes.push(this.map[[i, j]])
+        return this.map[[i, j]]
       }
 
-      if (classes.length > 0) {
-        return classes
-      } else {
-        if (i > 11 && j <= 11) {
-          return 'darkwhite'
-        }
-        return 'white'
-      }
-    },
-    getLevel (i, j) {
-      let level = (i % 2 == 0 &&
-              i >= 12 && i <= 20 &&
-              j % 2 == 0 &&
-              j >= 2 && j <= 10) ? 1 : 0;
-
-      return level;
+      return 'white'
     },
     clickable (i, j) {
-      if (!this.$parent.clickable(i, j)) {
-        return false;
-      }
-
       if (i % 2 == 1 || j % 2 == 1) {
         return false;
       }
 
-      let level = -1;
-      let out = true;
-      this.getShapeCoords(i, j).forEach((coord) => {
-        if (level == -1) {
-          level = this.getLevel(...coord)
-        } else if (level != this.getLevel(...coord)) {
-          out = false;
-        }
+      if (this.getShapeCoords(i, j).length == 0) {
+        return false
+      }
 
+      let out = true;
+      this.getShapeCoords(i, j).forEach(({ coord }) => {
         if (coord[0] > 20 || coord[1] > 20 ||
             coord[0] < 2 || coord[1] < 2) {
-          out = false;
+          out = false
         }
 
-        if (this.map[coord]) {
-          out = false;
+        if (!this.$parent.clickable(coord[0], coord[1])) {
+          out = false
         }
       });
 
       return out;
     },
-    hoverable (i, j) {
-      return this.clickable(i, j)
+    getHoverType (i, j) {
+      if (typeof this.hoverData.type == "string") {
+        return this.hoverData.type
+      } else {
+        return this.hoverData.type[i][j]
+      }
     },
     hoverCoord (i, j) {
-      if (this.hoverable(i, j)) {
-        this.getShapeCoords(i, j).forEach((coord) => {
+      if (this.clickable(i, j)) {
+        this.getShapeCoords(i, j).forEach(({ coord }) => {
           let el = this.getElem(...coord);
           if (el) {
-            el.classList.add('hover');
+            el.classList.add('hover')
           }
         });
       }
@@ -111,15 +102,24 @@ export default {
       });
     },
     clickCoord (i, j) {
-      return this.$parent.clickCoord(this.getShapeCoords(i, j))
+      if (this.clickable(i, j)) {
+        this.$emit('click', this.getShapeCoords(i, j))
+      }
     },
     getShapeCoords (i, j) {
       let coords = [];
 
-      this.currentCard.shape.forEach((row, idx) => {
+      if (!this.hoverShape) {
+        return []
+      }
+
+      this.hoverShape.forEach((row, idx) => {
         row.forEach((cell, jdx) => {
           if (cell == 1) {
-            coords.push([i + 2 * idx - 2, j + 2 * jdx - 2])
+            coords.push({
+              coord: [i + 2 * idx - 2, j + 2 * jdx - 2],
+              type: this.getHoverType(idx, jdx)
+            })
           }
         });
       });
@@ -129,3 +129,53 @@ export default {
   }
 }
 </script>
+
+<style lang="scss">
+table.game td {
+  border: 1px solid black;
+  padding: 20px;
+  position: relative;
+
+  span {
+    position: absolute;
+    font-size: 8px;
+    left: 2px;
+    top: 2px;
+  }
+
+  &.h-wall-blank {
+    padding: 4px 0px;
+    border: 0px;
+  }
+
+  &.v-wall-blank {
+    padding: 0px 4px;
+    border: 0px;
+  }
+
+  &.v-wall, &.h-wall {
+    background-color: #666;
+  }
+
+  &.hover {
+    &:before {
+      content: "";
+      position: absolute;
+      left: 0;
+      right: 0;
+      top: 0;
+      bottom: 0;
+      background-color: #000;
+      opacity: 0.2;
+    }
+  }
+
+  &.white {
+    background-color: #eeeeee;
+  }
+
+  &.darkwhite {
+    background-color: #d5d5d5;
+  }
+}
+</style>

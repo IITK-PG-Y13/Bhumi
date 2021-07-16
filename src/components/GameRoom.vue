@@ -121,6 +121,9 @@ export default {
           this.loaded = true
         })
       }
+    },
+    'gameConfig.currentTurn': function () {
+      this.nextTurn()
     }
   },
   computed: {

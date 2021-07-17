@@ -1,8 +1,8 @@
 <template>
-  <div :class="{card: true, 'has-border-success': selected}">
+  <div :class="{card: true, 'has-border-success': selected, 'is-small': true}">
     <div class="card-content pointer"
          @click="selectCard">
-      <table class="game selector">
+      <table class="game selector is-small">
         <tr v-for="(row, idx) in currentCard.shape">
           <td v-for="(cell, jdx) in row"
               :class="getCellType(idx, jdx)">
@@ -22,8 +22,10 @@
 </template>
 
 <script>
+import shapes from '../../data/shapes'
+
 export default {
-  props: ['cardIdx', 'cardAt', 'selected'],
+  props: ['cardIdx', 'selected', 'recipes'],
   data () {
     return {
       cardFlip: 0,
@@ -36,11 +38,35 @@ export default {
     }
   },
   methods: {
+    cardAt (idx, flip, rotate) {
+      let cl = this.recipes[idx]
+      let type = cl.type
+      let newMatrix = shapes.get(cl.shape)
+
+      for (let i = 0; i < rotate; i++) {
+        newMatrix = shapes.rotate(newMatrix)
+        if (typeof type != "string") {
+          type = shapes.rotate(type)
+        }
+      }
+
+      if (flip > 0) {
+        newMatrix = shapes.flip(newMatrix)
+        if (typeof type != "string") {
+          type = shapes.flip(type)
+        }
+      }
+
+      return {
+        ...cl,
+        type: type,
+        shape: newMatrix,
+      }
+    },
     selectCard () {
       this.$emit('select', {
-        cardFlip: this.cardFlip,
-        cardRotate: this.cardRotate,
-        idx: this.cardIdx
+        idx: this.cardIdx,
+        card: this.cardAt(this.cardIdx, this.cardFlip, this.cardRotate)
       })
     },
     rotateCard () {
@@ -71,11 +97,6 @@ export default {
 </script>
 
 <style lang="scss">
-table.selector {
-  margin-left: auto;
-  margin-right: auto;
-}
-
 .pointer {
   cursor: pointer;
 }

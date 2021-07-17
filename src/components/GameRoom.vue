@@ -10,29 +10,33 @@
                      :hoverData="selectedCardInfo"
                      @click="clickCoord"></board>
             </div>
-            <div class="column is-6" v-for="recipe in gameConfig.recipes">
+            <div class="column is-4" v-for="recipe in gameConfig.recipes">
               <show-recipe :recipe="recipe" :recipeCount="recipeCount[recipe.name]"></show-recipe>
             </div>
           </div>
         </div>
         <div class="column is-6">
           <div class="columns is-multiline">
-            <div class="column is-12">
+            <div class="column is-12 is-paddingless is-italic is-size-7">
               Move {{ turnIdx + 1 }} / {{ gameConfig.turns.length }}
             </div>
             <div class="column is-12" v-if="currentTurn.type == 'SEED'">
+              <h3 class="title is-4">Seed Phase</h3>
               <turn-cards :currentTurn="currentTurn"
+                          :turnIdx="this.turnIdx"
                           :recipes="this.currentTurn.cardList"
                           @select="selectCard"></turn-cards>
             </div>
             <div class="column is-12" v-else-if="currentTurn.type == 'HARVEST'">
+              <h3 class="title is-4">Harvest Phase</h3>
               <turn-cards :currentTurn="currentTurn"
+                          :turnIdx="this.turnIdx"
                           :recipes="gameConfig.recipes"
                           @select="selectCard"></turn-cards>
             </div>
           </div>
-          <div class="tile is-ancestor is-parent mt-5">
-            <div class="tile is-child"
+          <div class="tile is-ancestor is-parent player-status-list">
+            <div class="tile is-child player-status"
                  v-for="idx in gameConfig.totalPlayers">
               <div class="notification is-success is-light m-1"
                    v-if="currentTurn.playersPlayed && currentTurn.playersPlayed[idx] != null">
@@ -43,7 +47,7 @@
               </div>
             </div>
           </div>
-          <div class="box mt-5">
+          <div class="box">
             <button class="button is-fullwidth is-success"
                     @click="nextTurn"
                     v-if="allPlayersPlayed">
@@ -151,7 +155,7 @@ export default {
       return true
     },
     recipeCount () {
-      if (!this.gameConfig.playerRecipes) {
+      if (!this.gameConfig.playerRecipes || !this.gameConfig.playerRecipes[this.playerIdx]) {
         return {}
       }
       return this.gameConfig.playerRecipes[this.playerIdx];
@@ -185,14 +189,6 @@ export default {
         this.turnIdx = this.gameConfig.currentTurn
       }
     },
-    recipeAt (idx, flip, rotate) {
-      let cl = this.gameConfig.recipes[idx]
-
-      return {
-        type: cl.type,
-        shape: shapes.getNew(cl.shape)
-      }
-    },
     selectCard (evt) {
       this.selectedCardInfo = evt
     },
@@ -207,7 +203,7 @@ export default {
       }
 
       if (this.currentTurn.type == 'SEED') {
-        if (this.map[[i, j]]) {
+        if (this.map[[i, j]] && this.map[[i, j]].endsWith('-used')) {
           return false
         }
       } else if (this.currentTurn.type == 'HARVEST') {
@@ -256,7 +252,7 @@ export default {
     nextTurn () {
       this.selectedCardInfo = {}
       this.cardIdx = 0
-      this.turnIdx += 1
+      this.turnIdx = this.gameConfig.currentTurn
     }
   }
 }
@@ -298,6 +294,21 @@ table.game td {
   &.blue-used {
     background-color: blue;
     opacity: 0.2;
+  }
+}
+
+.player-status-list {
+  .player-status {
+    &:first-of-type {
+      .notification {
+        margin-left: 0px !important;
+      }
+    }
+    &:last-of-type {
+      .notification {
+        margin-right: 0px !important;
+      }
+    }
   }
 }
 </style>

@@ -57,6 +57,10 @@ export default {
       return 'white'
     },
     clickable (i, j) {
+      if (!this.hoverData) {
+        return false;
+      }
+
       if (i % 2 == 1 || j % 2 == 1) {
         return false;
       }
@@ -131,6 +135,11 @@ export default {
 </script>
 
 <style lang="scss">
+table.selector {
+  margin-left: auto;
+  margin-right: auto;
+}
+
 table.game td {
   border: 1px solid black;
   padding: 20px;
@@ -176,6 +185,42 @@ table.game td {
 
   &.darkwhite {
     background-color: #d5d5d5;
+  }
+}
+
+table.game.is-small td {
+  padding: 15px;
+
+  &.h-wall-blank {
+    padding: 2px 0px;
+  }
+
+  &.v-wall-blank {
+    padding: 0px 2px;
+  }
+}
+
+table.game.is-tiny td {
+  padding: 8px;
+
+  &.h-wall-blank {
+    padding: 0px 0px;
+  }
+
+  &.v-wall-blank {
+    padding: 0px 0px;
+  }
+}
+
+table.game.is-micro td {
+  padding: 4px;
+
+  &.h-wall-blank {
+    padding: 0px 0px;
+  }
+
+  &.v-wall-blank {
+    padding: 0px 0px;
   }
 }
 </style>

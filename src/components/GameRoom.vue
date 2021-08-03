@@ -61,7 +61,7 @@
             <div class="tile is-child player-status"
                  v-for="idx in gameConfig.totalPlayers">
               <div class="notification is-success is-light m-1"
-                   v-if="currentTurn.playersPlayed && currentTurn.playersPlayed[idx] != null">
+                   v-if="currentTurn.playersPlayed && currentTurn.playersPlayed[idx]">
                 {{ idx == playerIdx ? "You" : "Player " + idx }}
               </div>
               <div class="notification is-default m-1" v-else>
@@ -109,7 +109,6 @@
 
 <script>
 import shapes from '../data/shapes'
-import recipes from '../data/recipes'
 import db from '../firebase/init'
 import ShowCard from './gameroom/ShowCard.vue'
 import ShowRecipe from './gameroom/ShowRecipe.vue'
@@ -183,7 +182,7 @@ export default {
       }
 
       if ([...Array(this.gameConfig.totalPlayers).keys()].some((idx) => {
-        return this.currentTurn.playersPlayed[idx + 1] == null
+        return !this.currentTurn.playersPlayed[idx + 1]
       })) {
         return false
       }
@@ -194,8 +193,8 @@ export default {
   methods: {
     lastMapState (idx) {
       let unparseTurn = null
-      if (this.gameConfig.turns[this.gameConfig.currentTurn].playersPlayed &&
-          this.gameConfig.turns[this.gameConfig.currentTurn].playersPlayed[idx]) {
+      if (this.gameConfig.turns[this.gameConfig.currentTurn].playerState &&
+          this.gameConfig.turns[this.gameConfig.currentTurn].playerState[idx]) {
 
         unparseTurn = this.gameConfig.currentTurn
       } else {
@@ -206,13 +205,13 @@ export default {
         return {}
       }
 
-      if (this.gameConfig.turns[unparseTurn].playersPlayed &&
-          this.gameConfig.turns[unparseTurn].playersPlayed[idx]) {
+      if (this.gameConfig.turns[unparseTurn].playerState &&
+          this.gameConfig.turns[unparseTurn].playerState[idx]) {
         return JSON.parse(
                           this.
                             gameConfig.
                             turns[unparseTurn].
-                            playersPlayed[idx]
+                            playerState[idx]
         )
       }
 
@@ -261,8 +260,10 @@ export default {
       }
       return this.gameConfig.playerRecipes[idx];
     },
-    getGameMap () {
-      return JSON.stringify(this.map)
+    saveState () {
+      return db.
+        ref(`games/${this.gameId}/turns/${this.turnIdx}/playerState/${this.playerIdx}`).
+        set(JSON.stringify(this.map))
     },
     clickCoord (coords) {
       if (this.currentTurn.type == 'SEED') {
@@ -287,21 +288,26 @@ export default {
           ref(`games/${this.gameId}/playerRecipes/${this.playerIdx}/${this.selectedCardInfo.name}`).
           set(updatedRecipeCount)
 
+        this.saveState()
         this.turnStarted = true
       }
     },
     passTurn () {
-      db.
-        ref(`games/${this.gameId}/turns/${this.turnIdx}/playersPlayed/${this.playerIdx}`).
-        set(this.getGameMap()).then(() => {
+      Promise.all([
+        this.saveState(),
+        db.
+          ref(`games/${this.gameId}/turns/${this.turnIdx}/playersPlayed/${this.playerIdx}`).
+          set(true)
+      ]).then(() => {
           if (this.allPlayersPlayed) {
             db.ref(`games/${this.gameId}/currentTurn`).set(this.turnIdx + 1)
           }
       })
     },
     canPlayerPlay () {
-      if (this.currentTurn.type == 'SEED')
+      if (this.currentTurn.type == 'SEED') {
         return true
+      }
 
       if (this.currentTurn.type == 'HARVEST') {
         let out = true

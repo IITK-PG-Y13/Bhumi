@@ -254,7 +254,11 @@ export default {
         return true
 
       if (this.currentTurn.type == 'HARVEST') {
-        return false
+        let out = true
+        this.gameConfig.recipes.forEach((recipe) => {
+          out = false
+        })
+        return out
       }
 
       return true

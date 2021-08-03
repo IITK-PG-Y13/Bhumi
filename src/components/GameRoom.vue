@@ -5,18 +5,40 @@
       <div class="columns">
         <div class="column is-6">
           <div class="columns is-multiline">
-            <div class="column is-12">
+            <div class="column is-12 py-0">
               <board :map="map"
                      :hoverData="selectedCardInfo"
                      @click="clickCoord"></board>
             </div>
-            <div class="column is-4" v-for="recipe in gameConfig.recipes">
-              <show-recipe :recipe="recipe" :recipeCount="recipeCount[recipe.name]"></show-recipe>
+            <div class="column is-12 is-paddingless">
+              <hr style="margin: 0.5rem 0;"/>
+            </div>
+            <div class="column is-4 box"
+                 v-for="idx in gameConfig.totalPlayers"
+                 v-if="idx != playerIdx">
+              <span class="has-text-weight-bold">
+                {{ idx == playerIdx ? "You" : "Player " + idx }}
+              </span>
+              <board :map="lastMapState(idx)" size="is-tiny"></board>
+              <div class="content">
+                <ul class="has-text-left is-size-7">
+                  <li v-for="recipe in gameConfig.recipes">
+                    {{ recipe.name }} x {{ recipeCount(idx)[recipe.name] || 0 }}
+                  </li>
+                </ul>
+              </div>
             </div>
           </div>
         </div>
         <div class="column is-6">
           <div class="columns is-multiline">
+            <div class="column is-12 is-paddingless">
+              <div class="columns">
+                <div class="column is-4" v-for="recipe in gameConfig.recipes">
+                  <show-recipe :recipe="recipe" :recipeCount="recipeCount()[recipe.name]"></show-recipe>
+                </div>
+              </div>
+            </div>
             <div class="column is-12 is-paddingless is-italic is-size-7">
               Move {{ turnIdx + 1 }} / {{ gameConfig.turns.length }}
             </div>
@@ -59,7 +81,20 @@
             <span v-else>
               It's your turn
               <br/><br/>
-              <button class="button is-line is-fullwidth" @click="passTurn">Pass</button>
+              <button :class="{
+                                button: true,
+                                'is-fullwidth': true,
+                                'is-line': !turnStarted,
+                                'is-success': turnStarted
+                              }"
+                      @click="passTurn">
+                <template v-if="turnStarted">
+                  Done
+                </template>
+                <template v-else>
+                  Pass
+                </template>
+              </button>
             </span>
           </div>
         </div>
@@ -90,6 +125,7 @@ export default {
       turnIdx: 0,
       cardIdx: 0,
       selectedCardInfo: {},
+      turnStarted: false,
       map: {}
     }
   },
@@ -153,15 +189,35 @@ export default {
       }
 
       return true
-    },
-    recipeCount () {
-      if (!this.gameConfig.playerRecipes || !this.gameConfig.playerRecipes[this.playerIdx]) {
-        return {}
-      }
-      return this.gameConfig.playerRecipes[this.playerIdx];
     }
   },
   methods: {
+    lastMapState (idx) {
+      let unparseTurn = null
+      if (this.gameConfig.turns[this.gameConfig.currentTurn].playersPlayed &&
+          this.gameConfig.turns[this.gameConfig.currentTurn].playersPlayed[idx]) {
+
+        unparseTurn = this.gameConfig.currentTurn
+      } else {
+        unparseTurn = this.gameConfig.currentTurn - 1
+      }
+
+      if (unparseTurn < 0) {
+        return {}
+      }
+
+      if (this.gameConfig.turns[unparseTurn].playersPlayed &&
+          this.gameConfig.turns[unparseTurn].playersPlayed[idx]) {
+        return JSON.parse(
+                          this.
+                            gameConfig.
+                            turns[unparseTurn].
+                            playersPlayed[idx]
+        )
+      }
+
+      return {}
+    },
     setGameData () {
       this.playerIdx = this.gameConfig.players.indexOf(window.localStorage.getItem('playerId'))
 
@@ -169,25 +225,8 @@ export default {
         this.map = JSON.parse(this.gameConfig.initMap)
       }
 
-      if (this.gameConfig.currentTurn > 0) {
-        let unparseTurn = null
-        if (this.gameConfig.turns[this.gameConfig.currentTurn].playersPlayed &&
-            this.gameConfig.turns[this.gameConfig.currentTurn].playersPlayed[this.playerIdx]) {
-
-          unparseTurn = this.gameConfig.currentTurn
-        } else {
-          unparseTurn = this.gameConfig.currentTurn - 1
-        }
-
-        this.map = JSON.parse(
-                              this.
-                                gameConfig.
-                                turns[unparseTurn].
-                                playersPlayed[this.playerIdx]
-        )
-
-        this.turnIdx = this.gameConfig.currentTurn
-      }
+      this.map = this.lastMapState(this.playerIdx)
+      this.turnIdx = this.gameConfig.currentTurn
     },
     selectCard (evt) {
       this.selectedCardInfo = evt
@@ -203,7 +242,7 @@ export default {
       }
 
       if (this.currentTurn.type == 'SEED') {
-        if (this.map[[i, j]] && this.map[[i, j]].endsWith('-used')) {
+        if (this.map[[i, j]] && this.map[[i, j]] == 'used') {
           return false
         }
       } else if (this.currentTurn.type == 'HARVEST') {
@@ -213,6 +252,15 @@ export default {
 
       return true
     },
+    recipeCount (idx) {
+      if (idx == null) {
+        idx = this.playerIdx
+      }
+      if (!this.gameConfig.playerRecipes || !this.gameConfig.playerRecipes[idx]) {
+        return {}
+      }
+      return this.gameConfig.playerRecipes[idx];
+    },
     getGameMap () {
       return JSON.stringify(this.map)
     },
@@ -221,12 +269,14 @@ export default {
         coords.forEach(({ coord, type }) => {
           this.$set(this.map, coord, type)
         })
+
+        this.passTurn()
       } else if (this.currentTurn.type == 'HARVEST') {
         coords.forEach(({ coord, type }) => {
-          this.$set(this.map, coord, type + '-used')
+          this.$set(this.map, coord, 'used')
         })
 
-        let updatedRecipeCount = this.recipeCount[this.selectedCardInfo.name]
+        let updatedRecipeCount = this.recipeCount()[this.selectedCardInfo.name]
         if (updatedRecipeCount == null) {
           updatedRecipeCount = 1
         } else {
@@ -236,9 +286,9 @@ export default {
         db.
           ref(`games/${this.gameId}/playerRecipes/${this.playerIdx}/${this.selectedCardInfo.name}`).
           set(updatedRecipeCount)
-      }
 
-      this.passTurn()
+        this.turnStarted = true
+      }
     },
     passTurn () {
       db.
@@ -256,7 +306,7 @@ export default {
       if (this.currentTurn.type == 'HARVEST') {
         let out = true
         this.gameConfig.recipes.forEach((recipe) => {
-          out = false
+          // out = false
         })
         return out
       }
@@ -266,6 +316,7 @@ export default {
     nextTurn () {
       this.selectedCardInfo = {}
       this.cardIdx = 0
+      this.turnStarted = false
       this.turnIdx = this.gameConfig.currentTurn
 
       if (!this.canPlayerPlay()) {
@@ -288,39 +339,36 @@ export default {
 <style lang="scss">
 table.game td {
   &.yellow {
-    background-color: yellow;
+    background-color: #fcf5a7;
+    background-image: url(../assets/tiles/yellow.png);
+    background-size: 100% 100%;
   }
 
   &.green {
-    background-color: green;
+    background-color: #c9f7c6;
+    background-image: url(../assets/tiles/green.png);
+    background-size: 100% 100%;
   }
 
   &.brown {
-    background-color: brown;
+    background-color: #e0ba77;
+    background-image: url(../assets/tiles/brown.png);
+    background-size: 100% 100%;
   }
 
   &.blue {
-    background-color: blue;
+    background-color: #aae1fa;
+    background-image: url(../assets/tiles/blue.png);
+    background-size: 100% 100%;
   }
 
-  &.yellow-used {
-    background-color: yellow;
-    opacity: 0.2;
-  }
-
-  &.green-used {
-    background-color: green;
-    opacity: 0.2;
-  }
-
-  &.brown-used {
-    background-color: brown;
-    opacity: 0.2;
-  }
-
+  &.used,
+  &.yellow-used,
+  &.green-used,
+  &.brown-used,
   &.blue-used {
-    background-color: blue;
-    opacity: 0.2;
+    background-image: url(../assets/tiles/used.png);
+    background-size: 100% 100%;
   }
 }
 

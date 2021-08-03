@@ -1,16 +1,12 @@
 <template>
-  <table class="game selector">
-    <tr v-for="idx in 21">
-      <td v-for="jdx in 21"
+  <table :class="'game selector main ' + (size || '')">
+    <tr v-for="idx in 10">
+      <td v-for="jdx in 10"
           :ref="'coord-' + idx + ',' + jdx"
           :class="getClass(idx, jdx)"
           @mouseover="hoverCoord(idx, jdx)"
           @mouseout="unHover"
           @click="clickCoord(idx, jdx)">
-
-          <span v-if="idx % 2 == 0 && jdx % 2 == 0">
-            {{idx}}, {{jdx}}
-          </span>
       </td>
     </tr>
   </table>
@@ -18,7 +14,7 @@
 
 <script>
 export default {
-  props: ['map', 'hoverData'],
+  props: ['map', 'hoverData', 'size'],
   data () {
     return {
       hoverClass: {}
@@ -42,14 +38,6 @@ export default {
       }
     },
     getClass (i, j) {
-      if (i % 2 == 1) {
-        return 'h-wall-blank'
-      }
-
-      if (j % 2 == 1) {
-        return 'v-wall-blank'
-      }
-
       if (this.map[[i, j]] != null) {
         return this.map[[i, j]]
       }
@@ -61,18 +49,14 @@ export default {
         return false;
       }
 
-      if (i % 2 == 1 || j % 2 == 1) {
-        return false;
-      }
-
       if (this.getShapeCoords(i, j).length == 0) {
         return false
       }
 
       let out = true;
       this.getShapeCoords(i, j).forEach(({ coord, type }) => {
-        if (coord[0] > 20 || coord[1] > 20 ||
-            coord[0] < 2 || coord[1] < 2) {
+        if (coord[0] > 10 || coord[1] > 10 ||
+            coord[0] < 1 || coord[1] < 1) {
           out = false
         }
 
@@ -121,7 +105,7 @@ export default {
         row.forEach((cell, jdx) => {
           if (cell == 1) {
             coords.push({
-              coord: [i + 2 * idx - 2, j + 2 * jdx - 2],
+              coord: [i + idx - 1, j + jdx - 1],
               type: this.getHoverType(idx, jdx)
             })
           }
@@ -140,8 +124,19 @@ table.selector {
   margin-right: auto;
 }
 
+table.main {
+  border-collapse: separate;
+  border-spacing: 6px;
+
+  td.white {
+    background-color: rgba(0,0,0,0.1);
+    background-image: url(../../assets/tiles/white.png);
+    background-size: 100% 100%;
+  }
+}
+
 table.game td {
-  border: 1px solid black;
+  /* border: 1px solid brown; */
   padding: 20px;
   position: relative;
 
@@ -150,20 +145,6 @@ table.game td {
     font-size: 8px;
     left: 2px;
     top: 2px;
-  }
-
-  &.h-wall-blank {
-    padding: 4px 0px;
-    border: 0px;
-  }
-
-  &.v-wall-blank {
-    padding: 0px 4px;
-    border: 0px;
-  }
-
-  &.v-wall, &.h-wall {
-    background-color: #666;
   }
 
   &.hover {
@@ -180,47 +161,32 @@ table.game td {
   }
 
   &.white {
-    background-color: #eeeeee;
-  }
-
-  &.darkwhite {
-    background-color: #d5d5d5;
+    background-color: #eee;
   }
 }
 
-table.game.is-small td {
-  padding: 15px;
+table.game.is-small {
+  border-spacing: 4px;
 
-  &.h-wall-blank {
-    padding: 2px 0px;
-  }
-
-  &.v-wall-blank {
-    padding: 0px 2px;
+  td {
+    padding: 15px;
   }
 }
 
-table.game.is-tiny td {
-  padding: 8px;
+table.game.is-tiny {
+  border-spacing: 2px;
 
-  &.h-wall-blank {
-    padding: 0px 0px;
-  }
-
-  &.v-wall-blank {
-    padding: 0px 0px;
+  td {
+    padding: 8px;
   }
 }
 
-table.game.is-micro td {
-  padding: 4px;
+table.game.is-micro {
+  border-spacing: 0px;
+  border-collapse: collapse;
 
-  &.h-wall-blank {
-    padding: 0px 0px;
-  }
-
-  &.v-wall-blank {
-    padding: 0px 0px;
+  td {
+    padding: 4px;
   }
 }
 </style>

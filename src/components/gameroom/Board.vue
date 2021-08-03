@@ -22,6 +22,9 @@ export default {
   },
   computed: {
     hoverShape () {
+      if (this.hoverData == null) {
+        return null
+      }
       return this.hoverData.shape
     }
   },
@@ -80,6 +83,15 @@ export default {
           let el = this.getElem(...coord);
           if (el) {
             el.classList.add('hover')
+            el.classList.remove('red')
+          }
+        });
+      } else {
+        this.getShapeCoords(i, j).forEach(({ coord }) => {
+          let el = this.getElem(...coord);
+          if (el) {
+            el.classList.add('hover')
+            el.classList.add('red')
           }
         });
       }
@@ -126,7 +138,7 @@ table.selector {
 
 table.main {
   border-collapse: separate;
-  border-spacing: 6px;
+  border-spacing: 4px;
 
   td.white {
     background-color: rgba(0,0,0,0.1);
@@ -136,7 +148,7 @@ table.main {
 }
 
 table.game td {
-  /* border: 1px solid brown; */
+  border: 1px solid white;
   padding: 20px;
   position: relative;
 
@@ -148,6 +160,8 @@ table.game td {
   }
 
   &.hover {
+    cursor: pointer;
+
     &:before {
       content: "";
       position: absolute;
@@ -157,6 +171,15 @@ table.game td {
       bottom: 0;
       background-color: #000;
       opacity: 0.2;
+    }
+
+    &.red {
+      border: 1px solid red;
+      cursor: not-allowed;
+
+      &:before {
+        background-color: #600;
+      }
     }
   }
 
@@ -175,6 +198,7 @@ table.game.is-small {
 
 table.game.is-tiny {
   border-spacing: 2px;
+  border: 0px;
 
   td {
     padding: 8px;
@@ -184,6 +208,7 @@ table.game.is-tiny {
 table.game.is-micro {
   border-spacing: 0px;
   border-collapse: collapse;
+  border: 0px;
 
   td {
     padding: 4px;

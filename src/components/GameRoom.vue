@@ -249,10 +249,33 @@ export default {
           }
       })
     },
+    canPlayerPlay () {
+      if (this.currentTurn.type == 'SEED')
+        return true
+
+      if (this.currentTurn.type == 'HARVEST') {
+        return false
+      }
+
+      return true
+    },
     nextTurn () {
       this.selectedCardInfo = {}
       this.cardIdx = 0
       this.turnIdx = this.gameConfig.currentTurn
+
+      if (!this.canPlayerPlay()) {
+        this.passTurn()
+      }
+
+      if (this.turnIdx >= this.gameConfig.turns.length) {
+        this.$router.push({
+          name: 'GameEnd',
+          params: {
+            gameId: this.gameId
+          }
+        })
+      }
     }
   }
 }

@@ -25,7 +25,7 @@ const tileShapes = Object.keys(shapes.shapes)
 export default function createGame () {
   let numberOfTurns = 30;
   let cardsPerTurnMin = 2;
-  let cardsPerTurnMax = 4;
+  let cardsPerTurnMax = 3;
 
   let out = {
     active: true,

@@ -45,7 +45,7 @@ export default {
         return this.map[[i, j]]
       }
 
-      return 'white'
+      return 'base'
     },
     clickable (i, j) {
       if (!this.hoverData) {
@@ -71,7 +71,9 @@ export default {
       return out;
     },
     getHoverType (i, j) {
-      if (typeof this.hoverData.type == "string") {
+      if (this.hoverData.type == null) {
+        return null
+      } else if (typeof this.hoverData.type == "string") {
         return this.hoverData.type
       } else {
         return this.hoverData.type[i][j]
@@ -140,7 +142,7 @@ table.main {
   border-collapse: separate;
   border-spacing: 4px;
 
-  td.white {
+  td.base {
     background-color: rgba(0,0,0,0.1);
     background-image: url(../../assets/tiles/white.png);
     background-size: 100% 100%;
@@ -182,10 +184,6 @@ table.game td {
       }
     }
   }
-
-  &.white {
-    background-color: #eee;
-  }
 }
 
 table.game.is-small {
@@ -197,7 +195,7 @@ table.game.is-small {
 }
 
 table.game.is-tiny {
-  border-spacing: 2px;
+  border-spacing: 0px;
   border: 0px;
 
   td {

@@ -11,7 +11,7 @@
             </div>
             <div class="column is-4" v-for="recipe in gameConfig.recipes">
               <show-recipe :recipe="recipe"
-                           :recipeCount="recipeCount(playerId, recipe.name)"></show-recipe>
+                           :recipeCount="recipeCount(playerId, recipe.idx)"></show-recipe>
             </div>
           </div>
         </div>
@@ -103,12 +103,12 @@ export default {
         ))
       })
     },
-    recipeCount (playerId, recipeName) {
+    recipeCount (playerId, recipeIdx) {
       if (!this.gameConfig.playerRecipes || !this.gameConfig.playerRecipes[playerId]) {
         return 0
       }
 
-      return this.gameConfig.playerRecipes[playerId][recipeName]
+      return this.gameConfig.playerRecipes[playerId][recipeIdx]
     }
   }
 }

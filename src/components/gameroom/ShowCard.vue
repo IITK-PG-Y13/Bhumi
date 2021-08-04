@@ -1,5 +1,10 @@
 <template>
   <div :class="{card: true, 'has-border-success': selected, 'is-small': true}">
+    <div class="card-header pointer" v-if="header" @click="selectCard">
+      <div class="card-header-title is-centered">
+        {{ header }}
+      </div>
+    </div>
     <div class="card-content pointer"
          @click="selectCard">
       <table class="game selector is-small">
@@ -25,7 +30,7 @@
 import shapes from '../../data/shapes'
 
 export default {
-  props: ['cardIdx', 'selected', 'recipes'],
+  props: ['cardIdx', 'selected', 'recipe', 'header'],
   data () {
     return {
       cardFlip: 0,
@@ -34,25 +39,25 @@ export default {
   },
   computed: {
     currentCard () {
-      return this.cardAt(this.cardIdx, this.cardFlip, this.cardRotate)
+      return this.cardAt(this.cardFlip, this.cardRotate)
     }
   },
   methods: {
-    cardAt (idx, flip, rotate) {
-      let cl = this.recipes[idx]
+    cardAt (flip, rotate) {
+      let cl = this.recipe
       let type = cl.type
       let newMatrix = shapes.get(cl.shape)
 
       for (let i = 0; i < rotate; i++) {
         newMatrix = shapes.rotate(newMatrix)
-        if (typeof type != "string") {
+        if (Array.isArray(type)) {
           type = shapes.rotate(type)
         }
       }
 
       if (flip > 0) {
         newMatrix = shapes.flip(newMatrix)
-        if (typeof type != "string") {
+        if (Array.isArray(type)) {
           type = shapes.flip(type)
         }
       }
@@ -66,7 +71,7 @@ export default {
     selectCard () {
       this.$emit('select', {
         idx: this.cardIdx,
-        card: this.cardAt(this.cardIdx, this.cardFlip, this.cardRotate)
+        card: this.cardAt(this.cardFlip, this.cardRotate)
       })
     },
     rotateCard () {
@@ -105,6 +110,7 @@ export default {
   border: 2px solid #48c78e;
   position: relative;
 
+  /*
   &:before {
     content: "\2713";
     font-size: 2rem;
@@ -113,5 +119,22 @@ export default {
     left: 5px;
     top: 0;
   }
+  */
 }
+
+table.game td {
+  &.white {
+    background-color: #eee;
+  }
+
+  &.shiny-gold {
+    background-color: #d4af37;
+    background: linear-gradient(45deg, #d4af37, gold);
+  }
+
+  &.shiny-blue {
+    background: linear-gradient(135deg, #2a8ee0 75%, #87bcea);
+  }
+}
+
 </style>

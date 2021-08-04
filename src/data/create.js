@@ -34,7 +34,7 @@ export default function createGame () {
     totalPlayers: 4,
   }
 
-  let recipes = recipeObj.products.map((elem) => {
+  let recipes = recipeObj.products.map((elem, idx) => {
     let shuffledTypes = shuffleArray(tileTypes.slice(0))
     let shape = randElem(elem.shapes)
 
@@ -42,10 +42,27 @@ export default function createGame () {
       name: elem.name,
       shape: shape.map((row) => row.map((cell) => cell == 0 ? 0 : 1)),
       type: shape.map((row) => row.map((cell) => cell == 0 ? "null" : shuffledTypes[cell - 1])),
+      idx
     }
   })
 
   out.recipes = recipes
+
+  let godPowers = recipeObj.godPowers.map((elem, idx) => {
+    let godPower = randElem(elem.powers)
+
+    let type = {
+      "REJUVENATE": "shiny-blue"
+    }[godPower.powerType]
+
+    return {
+      ...godPower,
+      type,
+      idx,
+    }
+  })
+
+  out.godPowers = godPowers
 
   let turns = []
   for (let i = 0; i < numberOfTurns; i++) {
@@ -61,11 +78,18 @@ export default function createGame () {
 
     turns.push({
       type: "SEED",
-      cardList
+      // moveType: "PARALLEL",
+      cardList,
     })
 
     turns.push({
-      type: "HARVEST"
+      type: "HARVEST",
+      // moveType: "PARALLEL"
+    })
+
+    turns.push({
+      type: "WORSHIP",
+      moveType: "SEQUENTIAL"
     })
   }
 

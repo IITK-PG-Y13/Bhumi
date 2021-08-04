@@ -3,11 +3,18 @@
   <div class="hero-body">
     <div class="container" v-if="gameConfig && loaded">
       <div class="columns">
+        <div class="column is-2">
+          <div class="columns is-multiline">
+            <div class="column is-12 py-1" v-for="recipe in gameConfig.recipes">
+              <show-recipe :recipe="recipe" :recipeCount="recipeCount()[recipe.idx]"></show-recipe>
+            </div>
+          </div>
+        </div>
         <div class="column is-6">
           <div class="columns is-multiline">
             <div class="column is-12 py-0">
               <board :map="map"
-                     :hoverData="selectedCardInfo"
+                     :hoverData="(needToPlay ? selectedCardInfo : null)"
                      @click="clickCoord"></board>
             </div>
             <div class="column is-12 is-paddingless">
@@ -23,37 +30,39 @@
               <div class="content">
                 <ul class="has-text-left is-size-7">
                   <li v-for="recipe in gameConfig.recipes">
-                    {{ recipe.name }} x {{ recipeCount(idx)[recipe.name] || 0 }}
+                    {{ recipe.name }} x {{ recipeCount(idx)[recipe.idx] || 0 }}
                   </li>
                 </ul>
               </div>
             </div>
           </div>
         </div>
-        <div class="column is-6">
+        <div class="column is-4">
           <div class="columns is-multiline">
-            <div class="column is-12 is-paddingless">
-              <div class="columns">
-                <div class="column is-4" v-for="recipe in gameConfig.recipes">
-                  <show-recipe :recipe="recipe" :recipeCount="recipeCount()[recipe.name]"></show-recipe>
-                </div>
-              </div>
-            </div>
             <div class="column is-12 is-paddingless is-italic is-size-7">
               Move {{ turnIdx + 1 }} / {{ gameConfig.turns.length }}
             </div>
             <div class="column is-12" v-if="currentTurn.type == 'SEED'">
               <h3 class="title is-4">Seed Phase</h3>
               <turn-cards :currentTurn="currentTurn"
-                          :turnIdx="this.turnIdx"
-                          :recipes="this.currentTurn.cardList"
+                          :turnIdx="turnIdx"
+                          :recipes="currentTurn.cardList"
                           @select="selectCard"></turn-cards>
             </div>
             <div class="column is-12" v-else-if="currentTurn.type == 'HARVEST'">
               <h3 class="title is-4">Harvest Phase</h3>
               <turn-cards :currentTurn="currentTurn"
-                          :turnIdx="this.turnIdx"
+                          :turnIdx="turnIdx"
                           :recipes="gameConfig.recipes"
+                          headerKey="name"
+                          @select="selectCard"></turn-cards>
+            </div>
+            <div class="column is-12" v-else-if="currentTurn.type == 'WORSHIP'">
+              <h3 class="title is-4">Worship Phase</h3>
+              <turn-cards :currentTurn="currentTurn"
+                          :turnIdx="turnIdx"
+                          :recipes="gameConfig.godPowers"
+                          headerKey="name"
                           @select="selectCard"></turn-cards>
             </div>
           </div>
@@ -75,7 +84,7 @@
                     v-if="allPlayersPlayed">
               Go to Next Turn
             </button>
-            <span v-else-if="currentTurn.playersPlayed && currentTurn.playersPlayed[playerIdx]">
+            <span v-else-if="!needToPlay">
               Waiting for others...
             </span>
             <span v-else>
@@ -176,6 +185,25 @@ export default {
         return this.gameConfig.recipes[this.cardIdx]
       }
     },
+    needToPlay () {
+      if (this.currentTurn.playersPlayed && this.currentTurn.playersPlayed[this.playerIdx]) {
+        return false
+      } else {
+        if (this.currentTurn.moveType && this.currentTurn.moveType == 'SEQUENTIAL') {
+          if (!this.currentTurn.playersPlayed) {
+            return (this.playerIdx == 1)
+          }
+
+          if (this.currentTurn.playersPlayed.length == this.playerIdx) {
+            return true
+          }
+
+          return false
+        } else {
+          return true
+        }
+      }
+    },
     allPlayersPlayed () {
       if (!this.currentTurn.playersPlayed) {
         return false
@@ -235,8 +263,7 @@ export default {
         return false
       }
 
-      if (this.currentTurn.playersPlayed &&
-          this.currentTurn.playersPlayed[this.playerIdx] != null) {
+      if (!this.needToPlay) {
         return false
       }
 
@@ -244,9 +271,31 @@ export default {
         if (this.map[[i, j]] && this.map[[i, j]] == 'used') {
           return false
         }
-      } else if (this.currentTurn.type == 'HARVEST') {
-        if (!(this.map[[i, j]] && type == this.map[[i, j]]))
+
+        return true
+      }
+
+      if (this.currentTurn.type == 'HARVEST') {
+        if (!(this.map[[i, j]] && type == this.map[[i, j]])) {
           return false
+        }
+
+        return true
+      }
+
+      if (this.currentTurn.type == 'WORSHIP') {
+        let out = true
+
+        this.selectedCardInfo.cost.forEach((cost, idx) => {
+          if (cost > 0 && (
+                !this.recipeCount()[idx] ||
+                this.recipeCount()[idx] < cost
+          )) {
+            out = false
+          }
+        })
+
+        return out
       }
 
       return true
@@ -258,7 +307,7 @@ export default {
       if (!this.gameConfig.playerRecipes || !this.gameConfig.playerRecipes[idx]) {
         return {}
       }
-      return this.gameConfig.playerRecipes[idx];
+      return this.gameConfig.playerRecipes[idx]
     },
     saveState () {
       return db.
@@ -272,12 +321,14 @@ export default {
         })
 
         this.passTurn()
-      } else if (this.currentTurn.type == 'HARVEST') {
+      }
+
+      if (this.currentTurn.type == 'HARVEST') {
         coords.forEach(({ coord, type }) => {
           this.$set(this.map, coord, 'used')
         })
 
-        let updatedRecipeCount = this.recipeCount()[this.selectedCardInfo.name]
+        let updatedRecipeCount = this.recipeCount()[this.selectedCardInfo.idx]
         if (updatedRecipeCount == null) {
           updatedRecipeCount = 1
         } else {
@@ -285,8 +336,31 @@ export default {
         }
 
         db.
-          ref(`games/${this.gameId}/playerRecipes/${this.playerIdx}/${this.selectedCardInfo.name}`).
+          ref(`games/${this.gameId}/playerRecipes/${this.playerIdx}/${this.selectedCardInfo.idx}`).
           set(updatedRecipeCount)
+
+        this.saveState()
+        this.turnStarted = true
+      }
+
+      if (this.currentTurn.type == 'WORSHIP') {
+        if (this.selectedCardInfo.powerType == 'REJUVENATE') {
+          coords.forEach(({ coord }) => {
+            if (this.map[coord] == 'used') {
+              this.$set(this.map, coord, null)
+            }
+          })
+        }
+
+        this.selectedCardInfo.cost.forEach((cost, idx) => {
+          if (cost == 0) {
+            return
+          }
+
+          db.
+            ref(`games/${this.gameId}/playerRecipes/${this.playerIdx}/${idx}`).
+            set(this.recipeCount()[idx] - cost)
+        })
 
         this.saveState()
         this.turnStarted = true

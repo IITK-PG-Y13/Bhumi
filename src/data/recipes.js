@@ -50,14 +50,34 @@ export default {
   ],
   godPowers: [
     {
-      name: "Zeus",
-      description: "",
-      shape: [
-        [ 0, 1, 0 ],
-        [ 1, 1, 1 ],
-        [ 0, 1, 0 ]
+      powers: [
+        {
+          name: "Poseidon",
+          description: "Olympic God of the sea",
+          shape: [
+            [ 0, 0, 0 ],
+            [ 1, 1, 1 ],
+            [ 0, 0, 0 ],
+          ],
+          powerType: "REJUVENATE",
+          cost: [1, 0, 0]
+        }
       ],
-      powerType: 1
+    },
+    {
+      powers: [
+        {
+          name: "Varuna",
+          description: "Indic God of the ocean",
+          shape: [
+            [ 1, 1, 1 ],
+            [ 1, 1, 1 ],
+            [ 1, 1, 1 ],
+          ],
+          powerType: "REJUVENATE",
+          cost: [1, 1, 0]
+        }
+      ],
     }
   ],
   getMap (recipe) {

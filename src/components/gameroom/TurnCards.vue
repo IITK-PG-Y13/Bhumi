@@ -3,8 +3,9 @@
     <div class="column is-4"
          v-for="idx in cardListLength">
       <show-card :cardIdx="idx - 1"
-                 :recipes="recipes"
+                 :recipe="recipes[idx - 1]"
                  :selected="cardIdx == idx - 1"
+                 :header="headerKey ? recipes[idx - 1][headerKey] : null"
                  @select="selectCard"></show-card>
     </div>
   </div>
@@ -23,7 +24,7 @@ export default {
   components: {
     ShowCard,
   },
-  props: [ 'currentTurn', 'recipes', 'turnIdx' ],
+  props: [ 'currentTurn', 'recipes', 'turnIdx', 'headerKey' ],
   computed: {
     cardListLength () {
       return this.recipes.length

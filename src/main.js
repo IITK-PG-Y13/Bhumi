@@ -8,7 +8,7 @@ import router from './router'
 Vue.use(rtdbPlugin)
 
 // Require the main Sass manifest file
-require('./assets/sass/main.scss');
+require('./assets/sass/style.scss');
 
 Vue.config.productionTip = false
 

@@ -109,32 +109,5 @@ export default {
 .has-border-success {
   border: 2px solid #48c78e;
   position: relative;
-
-  /*
-  &:before {
-    content: "\2713";
-    font-size: 2rem;
-    color: #48c78e;
-    position: absolute;
-    left: 5px;
-    top: 0;
-  }
-  */
 }
-
-table.game td {
-  &.white {
-    background-color: #eee;
-  }
-
-  &.shiny-gold {
-    background-color: #d4af37;
-    background: linear-gradient(45deg, #d4af37, gold);
-  }
-
-  &.shiny-blue {
-    background: linear-gradient(135deg, #2a8ee0 75%, #87bcea);
-  }
-}
-
 </style>

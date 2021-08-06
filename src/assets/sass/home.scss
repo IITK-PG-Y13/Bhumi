@@ -1,6 +1,88 @@
-h1{
-    color: red;
-    text-decoration: underline;
-    text-align: center;
-    margin: 20em auto;
+table.game {
+  margin-left: auto;
+  margin-right: auto;
+  border-collapse: separate;
+  border-spacing: 4px;
+
+  &.is-small {
+    border-spacing: 4px;
+
+    td {
+      padding: 15px;
+    }
+  }
+
+  &.is-tiny {
+    border-spacing: 0px;
+    border: 0px;
+
+    td {
+      padding: 8px;
+    }
+  }
+
+  &.is-micro {
+    border-spacing: 0px;
+    border-collapse: collapse;
+    border: 0px;
+
+    td {
+      padding: 4px;
+    }
+  }
 }
+
+table.game td {
+  border: 1px solid white;
+  padding: 20px;
+  position: relative;
+
+  &.base {
+    background-color: rgba(0,0,0,0.1);
+    background-image: url(../tiles/white.png);
+    background-size: 100% 100%;
+  }
+
+  &.yellow {
+    background-color: #fcf5a7;
+    background-image: url(../tiles/yellow.png);
+    background-size: 100% 100%;
+  }
+
+  &.green {
+    background-color: #c9f7c6;
+    background-image: url(../tiles/green.png);
+    background-size: 100% 100%;
+  }
+
+  &.brown {
+    background-color: #e0ba77;
+    background-image: url(../tiles/brown.png);
+    background-size: 100% 100%;
+  }
+
+  &.blue {
+    background-color: #aae1fa;
+    background-image: url(../tiles/blue.png);
+    background-size: 100% 100%;
+  }
+
+  &.used {
+    background-image: url(../tiles/used.png);
+    background-size: 100% 100%;
+  }
+
+  &.white {
+    background-color: #eee;
+  }
+
+  &.shiny-gold {
+    background-color: #d4af37;
+    background: linear-gradient(45deg, #d4af37, gold);
+  }
+
+  &.shiny-blue {
+    background: linear-gradient(135deg, #2a8ee0 75%, #87bcea);
+  }
+}
+

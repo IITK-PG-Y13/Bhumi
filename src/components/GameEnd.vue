@@ -3,15 +3,15 @@
   <div class="hero-body">
     <div class="container" v-if="gameConfig && loaded">
       <div class="columns is-multiline">
-        <div class="column is-6" v-for="(map, playerId) in maps">
+        <div class="column is-6" v-for="(map, idx) in maps">
           <div class="columns is-multiline">
             <div class="column is-12">
-              {{ playerId }}
+              {{ idx == playerIdx ? "You" : "Player " + idx }}
               <board :map="map"></board>
             </div>
             <div class="column is-4" v-for="recipe in gameConfig.recipes">
               <show-recipe :recipe="recipe"
-                           :recipeCount="recipeCount(playerId, recipe.idx)"></show-recipe>
+                           :recipeCount="recipeCount(idx, recipe.idx)"></show-recipe>
             </div>
           </div>
         </div>
@@ -33,6 +33,7 @@ export default {
   data () {
     return {
       loaded: false,
+      playerIdx: -1,
       gameConfig: null,
       maps: {}
     }
@@ -99,7 +100,7 @@ export default {
                                              this.
                                                gameConfig.
                                                turns[latestTurn].
-                                               playersPlayed[idx]
+                                               playerState[idx]
         ))
       })
     },

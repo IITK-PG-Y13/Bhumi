@@ -168,83 +168,28 @@ export default {
 </script>
 
 <style lang="scss">
-table.selector {
-  margin-left: auto;
-  margin-right: auto;
-}
+table.game td.hover {
+  cursor: pointer;
 
-table.main {
-  border-collapse: separate;
-  border-spacing: 4px;
-
-  td.base {
-    background-color: rgba(0,0,0,0.1);
-    background-image: url(../../assets/tiles/white.png);
-    background-size: 100% 100%;
-  }
-}
-
-table.game td {
-  border: 1px solid white;
-  padding: 20px;
-  position: relative;
-
-  span {
+  &:before {
+    content: "";
     position: absolute;
-    font-size: 8px;
-    left: 2px;
-    top: 2px;
+    left: 0;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    background-color: #000;
+    opacity: 0.2;
   }
 
-  &.hover {
-    cursor: pointer;
+  &.red {
+    border: 1px solid red;
+    cursor: not-allowed;
 
     &:before {
-      content: "";
-      position: absolute;
-      left: 0;
-      right: 0;
-      top: 0;
-      bottom: 0;
-      background-color: #000;
-      opacity: 0.2;
-    }
-
-    &.red {
-      border: 1px solid red;
-      cursor: not-allowed;
-
-      &:before {
-        background-color: #600;
-      }
+      background-color: #600;
     }
   }
 }
 
-table.game.is-small {
-  border-spacing: 4px;
-
-  td {
-    padding: 15px;
-  }
-}
-
-table.game.is-tiny {
-  border-spacing: 0px;
-  border: 0px;
-
-  td {
-    padding: 8px;
-  }
-}
-
-table.game.is-micro {
-  border-spacing: 0px;
-  border-collapse: collapse;
-  border: 0px;
-
-  td {
-    padding: 4px;
-  }
-}
 </style>

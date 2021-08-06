@@ -179,8 +179,11 @@ export default {
         })
       }
     },
-    'gameConfig.currentTurn': function () {
-      this.nextTurn()
+    'gameConfig.currentTurn': {
+      immediate: true,
+      handler () {
+        this.nextTurn()
+      }
     }
   },
   computed: {
@@ -429,10 +432,6 @@ export default {
       this.turnStarted = false
       this.turnIdx = this.gameConfig.currentTurn
 
-      if (!this.canPlayerPlay()) {
-        this.passTurn()
-      }
-
       if (this.turnIdx >= this.gameConfig.turns.length) {
         this.$router.push({
           name: 'GameEnd',
@@ -441,47 +440,16 @@ export default {
           }
         })
       }
+
+      if (!this.canPlayerPlay()) {
+        this.passTurn()
+      }
     }
   }
 }
 </script>
 
 <style lang="scss">
-table.game td {
-  &.yellow {
-    background-color: #fcf5a7;
-    background-image: url(../assets/tiles/yellow.png);
-    background-size: 100% 100%;
-  }
-
-  &.green {
-    background-color: #c9f7c6;
-    background-image: url(../assets/tiles/green.png);
-    background-size: 100% 100%;
-  }
-
-  &.brown {
-    background-color: #e0ba77;
-    background-image: url(../assets/tiles/brown.png);
-    background-size: 100% 100%;
-  }
-
-  &.blue {
-    background-color: #aae1fa;
-    background-image: url(../assets/tiles/blue.png);
-    background-size: 100% 100%;
-  }
-
-  &.used,
-  &.yellow-used,
-  &.green-used,
-  &.brown-used,
-  &.blue-used {
-    background-image: url(../assets/tiles/used.png);
-    background-size: 100% 100%;
-  }
-}
-
 .player-status-list {
   .player-status {
     &:first-of-type {

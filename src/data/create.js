@@ -1,5 +1,6 @@
 import shapes from './shapes'
 import recipeObj from './recipes'
+import powerObj from './powers'
 
 // Random number from a to b inclusive.
 function randInt (a, b) {
@@ -48,7 +49,7 @@ export default function createGame () {
 
   out.recipes = recipes
 
-  let godPowers = recipeObj.godPowers.map((elem, idx) => {
+  let godPowers = powerObj.godPowers.map((elem, idx) => {
     let godPower = randElem(elem.powers)
 
     let type = {

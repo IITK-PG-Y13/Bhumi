@@ -1,6 +1,23 @@
 <template>
 <section class="hero">
-  <div class="hero-body">
+  <div class="container">
+    <h1 class="title is-2">
+      Welcome to Bhumi
+    </h1>
+    <div class="columns">
+      <div class="column is-8 is-offset-2 box">
+        <div class="columns is-vcentered">
+          <div class="column is-3">
+            <img src="home_image.png" class="image is-128x128 mr-6">
+          </div>
+          <div class="column is-9 has-text-left content is-size-5 is-italic">
+            Bhumi is a game of resource allocation. You are a farmer, nurturing and nourishing your land.
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="hero-body pt-6">
     <div class="container" v-if="gameList">
       <div class="columns is-multiline">
         <div class="column is-12" v-if="activeGames.length > 0">

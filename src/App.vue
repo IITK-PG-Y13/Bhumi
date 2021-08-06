@@ -3,8 +3,9 @@
     <nav class="navbar is-primary is-fixed-top">
       <div class="navbar-brand">
         <a class="navbar-item">
+          <img src="favicon-32x32.png" class="image pr-2">
           <strong>
-            Game
+            Bhumi
           </strong>
         </a>
       </div>

@@ -3,10 +3,16 @@
   <div class="hero-body">
     <div class="container" v-if="gameConfig && loaded">
       <div class="columns">
-        <div class="column is-2">
+        <div class="column is-2" style="max-height: 80vh; overflow-y: scroll;">
+          <h3 class="title is-4">Reference</h3>
           <div class="columns is-multiline">
-            <div class="column is-12 py-1" v-for="recipe in gameConfig.recipes">
+            <div class="column is-12" v-for="recipe in gameConfig.recipes">
               <show-recipe :recipe="recipe" :recipeCount="recipeCount()[recipe.idx]"></show-recipe>
+            </div>
+          </div>
+          <div class="columns is-multiline">
+            <div class="column is-12" v-for="power in gameConfig.godPowers">
+              <show-god :god-power="power" :recipes="gameConfig.recipes"></show-god>
             </div>
           </div>
         </div>
@@ -121,6 +127,7 @@ import shapes from '../data/shapes'
 import db from '../firebase/init'
 import ShowCard from './gameroom/ShowCard.vue'
 import ShowRecipe from './gameroom/ShowRecipe.vue'
+import ShowGod from './gameroom/ShowGod.vue'
 import Board from './gameroom/Board.vue'
 import TurnCards from './gameroom/TurnCards.vue'
 
@@ -142,6 +149,7 @@ export default {
     Board,
     ShowRecipe,
     TurnCards,
+    ShowGod,
   },
   props: [ 'gameId' ],
   watch: {

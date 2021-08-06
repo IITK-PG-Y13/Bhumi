@@ -5,6 +5,7 @@
       <div class="columns">
         <div class="column is-2" style="max-height: 80vh; overflow-y: scroll;">
           <h3 class="title is-4">Reference</h3>
+          <h5 class="subtitle is-6">VP: {{ victoryPoints }}</h5>
           <div class="columns is-multiline">
             <div class="column is-12" v-for="recipe in gameConfig.recipes">
               <show-recipe :recipe="recipe" :recipeCount="recipeCount()[recipe.idx]"></show-recipe>
@@ -193,6 +194,27 @@ export default {
         return this.gameConfig.recipes[this.cardIdx]
       }
     },
+    victoryPoints () {
+      let recipeCount = this.recipeCount()
+
+      let vp = 0
+
+      recipeCount.forEach((ct, idx) => {
+        switch (idx) {
+          case 0:
+            vp += ct
+            break
+          case 1:
+            vp += ct * 5
+            break
+          case 2:
+            vp += ct * 10
+            break
+        }
+      })
+
+      return vp
+    },
     needToPlay () {
       if (this.currentTurn.playersPlayed && this.currentTurn.playersPlayed[this.playerIdx]) {
         return false
@@ -313,7 +335,7 @@ export default {
         idx = this.playerIdx
       }
       if (!this.gameConfig.playerRecipes || !this.gameConfig.playerRecipes[idx]) {
-        return {}
+        return []
       }
       return this.gameConfig.playerRecipes[idx]
     },

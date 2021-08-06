@@ -5,7 +5,7 @@
         {{ header }}
       </div>
     </div>
-    <div class="card-content pointer"
+    <div class="card-content pointer px-0"
          @click="selectCard">
       <table class="game selector is-small">
         <tr v-for="(row, idx) in currentCard.shape">
@@ -16,10 +16,10 @@
       </table>
     </div>
     <div class="card-footer">
-      <a class="card-footer-item" @click="flipCard">
+      <a class="card-footer-item px-0" @click="flipCard">
         Flip
       </a>
-      <a class="card-footer-item" @click="rotateCard">
+      <a class="card-footer-item px-0" @click="rotateCard">
         Rotate
       </a>
     </div>

@@ -13,14 +13,37 @@
 </template>
 
 <script>
+import 'animate.css'
+
 export default {
   props: ['map', 'hoverData', 'size'],
   data () {
     return {
+      changedKeys: {},
       hoverClass: {}
     }
   },
+  watch: {
+    mapCopy: {
+      deep: true,
+      handler (newMap, oldMap) {
+        let changedKeys = {}
+        Object.entries(newMap).forEach(([key, value]) => {
+          if (oldMap[key] && !newMap[key]) {
+            changedKeys[key] = 'base'
+          } else if (!oldMap[key] || oldMap[key] != newMap[key]) {
+            changedKeys[key] = value
+          }
+        })
+
+        this.changedKeys = changedKeys
+      }
+    }
+  },
   computed: {
+    mapCopy () {
+      return JSON.parse(JSON.stringify(this.map))
+    },
     hoverShape () {
       if (this.hoverData == null) {
         return null
@@ -41,11 +64,23 @@ export default {
       }
     },
     getClass (i, j) {
-      if (this.map[[i, j]] != null) {
-        return this.map[[i, j]]
+      let animateClass = ""
+
+      if (this.changedKeys[i + "," + j]) {
+        if (this.changedKeys[i + "," + j] == 'used') {
+          animateClass = " animate__animated animate__fadeIn"
+        } else if (this.changedKeys[i + "," + j] == 'base') {
+          animateClass = " animate__animated animate__flipInX"
+        } else {
+          animateClass = " animate__animated animate__bounceIn"
+        }
       }
 
-      return 'base'
+      if (this.map[[i, j]] != null) {
+        return this.map[[i, j]] + animateClass
+      }
+
+      return 'base' + animateClass
     },
     clickable (i, j) {
       if (!this.hoverData) {

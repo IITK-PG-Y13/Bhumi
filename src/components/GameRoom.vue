@@ -180,7 +180,6 @@ export default {
       }
     },
     'gameConfig.currentTurn': {
-      immediate: true,
       handler () {
         this.nextTurn()
       }
@@ -286,7 +285,7 @@ export default {
       }
 
       this.map = this.lastMapState(this.playerIdx)
-      this.turnIdx = this.gameConfig.currentTurn
+      this.nextTurn()
     },
     selectCard (evt) {
       this.selectedCardInfo = evt
@@ -340,7 +339,21 @@ export default {
       if (!this.gameConfig.playerRecipes || !this.gameConfig.playerRecipes[idx]) {
         return []
       }
-      return this.gameConfig.playerRecipes[idx]
+      let rc = this.gameConfig.playerRecipes[idx]
+
+      // Random stuff because RTDB is weird
+      // Convert to array if playerRecipes is an object
+      if (Array.isArray(rc)) {
+        return rc
+      } else {
+        let maxV = Math.max(...Object.keys(rc))
+        let nrc = new Array(maxV)
+        for (let i = 0; i < maxV; i++) {
+          nrc[i] = rc[i] || 0
+        }
+
+        return nrc
+      }
     },
     saveState () {
       return db.

@@ -45,5 +45,9 @@ export default {
   godPowerClasses: {
     "REJUVENATE": "shiny-blue",
     "BURN": "shiny-red"
+  },
+  godPowerDescriptions: {
+    "REJUVENATE": "Restores previously harvested land",
+    "BURN": "Burns opponent's land"
   }
 }

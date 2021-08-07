@@ -10,13 +10,14 @@
         {{ godPower.description }}
       </div>
       <div class="is-size-7 notification is-default media mb-1 px-4 py-2">
-        <template v-if="godPower.powerType == 'REJUVENATE'">
-          <div class="is-inline-block media-left"
-               style="width: 20px; height: 20px; background: linear-gradient(135deg, #2a8ee0 75%, #87bcea)"></div>
-          <div class="media-content">
-            Restores previously harvested land
-          </div>
-        </template>
+        <div :class="{'is-inline-block': true,
+                      'media-left': true,
+                      'demo-card': true,
+                      [godPower.type]: true
+                     }"></div>
+        <div class="media-content">
+          {{ godPowerDescriptions[godPower.powerType] }}
+        </div>
       </div>
       <div class="is-size-7 px-4">
         Requirements
@@ -31,8 +32,14 @@
 </template>
 
 <script>
+import powerObj from '../../data/powers'
 export default {
   props: ['godPower', 'recipes'],
+  data () {
+    return {
+      godPowerDescriptions: powerObj.godPowerDescriptions
+    }
+  },
   methods: {
     getCellType (i, j) {
       if (this.recipe.shape[i][j] == 0) {
@@ -48,3 +55,10 @@ export default {
   }
 }
 </script>
+
+<style lang="scss">
+.demo-card {
+  width: 1.2rem;
+  height: 1.2rem;
+}
+</style>

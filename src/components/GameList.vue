@@ -71,15 +71,15 @@ import { v4 } from 'uuid'
 
 let TUTORIAL_CARDS = [
   {
-    image: "home_image.png",
+    image: "static/home_image.png",
     text: "Bhumi is a game of resource allocation. You are a farmer, nurturing and nourishing your land."
   },
   {
-    image: "home_image.png",
+    image: "static/home_image.png",
     text: "Either trade with your neighbours to mutually grow your farm, or ask the Gods to attack their crops!"
   },
   {
-    image: "home_image.png",
+    image: "static/home_image.png",
     text: "At the end of the game, the best harvest wins!"
   },
 ]

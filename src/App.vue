@@ -3,7 +3,7 @@
     <nav class="navbar is-primary is-fixed-top">
       <div class="navbar-brand">
         <a class="navbar-item">
-          <img src="favicon-32x32.png" class="image pr-2">
+          <img src="static/favicon-32x32.png" class="image pr-2">
           <strong>
             Bhumi
           </strong>

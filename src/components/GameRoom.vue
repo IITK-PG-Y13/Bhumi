@@ -208,6 +208,12 @@ export default {
       handler () {
         this.nextTurn()
       }
+    },
+    'gameConfig.playerState': {
+      deep: true,
+      handler () {
+        this.map = this.lastMapState(this.playerIdx)
+      }
     }
   },
   computed: {
@@ -277,37 +283,16 @@ export default {
   },
   methods: {
     lastMapState (idx) {
-      let unparseTurn = null
-      if (this.gameConfig.turns[this.gameConfig.currentTurn].playerState &&
-          this.gameConfig.turns[this.gameConfig.currentTurn].playerState[idx]) {
-
-        unparseTurn = this.gameConfig.currentTurn
-      } else {
-        unparseTurn = this.gameConfig.currentTurn - 1
-      }
-
-      if (unparseTurn < 0) {
-        return {}
-      }
-
-      if (this.gameConfig.turns[unparseTurn].playerState &&
-          this.gameConfig.turns[unparseTurn].playerState[idx]) {
-        return JSON.parse(
-                          this.
-                            gameConfig.
-                            turns[unparseTurn].
-                            playerState[idx]
-        )
+      if (this.gameConfig &&
+          this.gameConfig.playerState &&
+          this.gameConfig.playerState[idx]) {
+        return JSON.parse(this.gameConfig.playerState[idx])
       }
 
       return {}
     },
     setGameData () {
       this.playerIdx = this.gameConfig.players.indexOf(window.localStorage.getItem('playerId'))
-
-      if (this.gameConfig.initMap && this.gameConfig.currentTurn == 0) {
-        this.map = JSON.parse(this.gameConfig.initMap)
-      }
 
       this.map = this.lastMapState(this.playerIdx)
       this.nextTurn()
@@ -408,9 +393,12 @@ export default {
         map = this.map
       }
 
-      return db.
-        ref(dbRefs.playerState(this.gameId, this.turnIdx, playerId)).
-        set(JSON.stringify(map))
+      return Promise.all([
+        db.
+          ref(dbRefs.playerState(this.gameId, this.turnIdx, playerId)).
+          set(JSON.stringify(map)),
+        db.ref(dbRefs.state(this.gameId, playerId)).set(JSON.stringify(map))
+      ])
     },
     clickCoord (coords) {
       if (this.currentTurn.type == 'SEED') {

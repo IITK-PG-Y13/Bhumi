@@ -8,6 +8,9 @@ let dbRefs = {
     gameConfig (id) {
         return `games/${id}`
     },
+    state (gameId, playerId) {
+        return `games/${gameId}/playerState/${playerId}`
+    },
     playerState (gameId, turnId, playerId) {
         return `games/${gameId}/turns/${turnId}/playerState/${playerId}`
     },

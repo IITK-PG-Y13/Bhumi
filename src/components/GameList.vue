@@ -54,6 +54,15 @@
             Create New
           </button>
         </div>
+        <div class="column is-12" v-if="liveGames.length > 0">
+          <h2 class="title is-4">
+            Spectate Games
+          </h2>
+        </div>
+        <div class="column is-6"
+             v-for="key in liveGames">
+          <game-card :gameId="key[0]" :gameData="key[1]"></game-card>
+        </div>
       </div>
     </div>
     <div v-else>
@@ -143,6 +152,14 @@ export default {
       return Object.entries(this.gameList).filter((key) => {
         return key[1].active &&
                !key[1].started
+      });
+    },
+    liveGames () {
+      return Object.entries(this.gameList).filter((key) => {
+        return key[1].active &&
+               key[1].started &&
+               key[1].players &&
+               !key[1].players.includes(window.localStorage.getItem('playerId'))
       });
     }
   },

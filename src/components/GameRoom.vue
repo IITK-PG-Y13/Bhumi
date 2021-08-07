@@ -22,7 +22,7 @@
             <div class="column is-12">
               <div class="tabs is-centered is-fullwidth is-toggle">
                 <ul>
-                  <li :class="{'is-active': actionView == 'SELF'}">
+                  <li :class="{'is-active': actionView == 'SELF'}" v-if="activePlayer">
                     <a @click="actionView = 'SELF'">You</a>
                   </li>
                   <li v-for="idx in gameConfig.totalPlayers"
@@ -109,9 +109,12 @@
             </div>
           </div>
           <div class="box">
+            <span v-if="!activePlayer">
+              Spectating...
+            </span>
             <button class="button is-fullwidth is-success"
                     @click="nextTurn"
-                    v-if="allPlayersPlayed">
+                    v-else-if="allPlayersPlayed">
               Go to Next Turn
             </button>
             <span v-else-if="!needToPlay">
@@ -187,8 +190,7 @@ export default {
           if (window.localStorage.getItem('playerId') == null ||
               this.gameConfig.players == null ||
               !this.gameConfig.started ||
-              !this.gameConfig.active ||
-              !this.gameConfig.players.includes(window.localStorage.getItem('playerId'))) {
+              !this.gameConfig.active) {
 
             this.$router.push({
               path: '/',
@@ -197,6 +199,11 @@ export default {
               }
             })
             return
+          }
+
+          if (!this.activePlayer) {
+            this.actionView = 'OPP'
+            this.actionViewIdx = 1
           }
 
           this.setGameData()
@@ -217,6 +224,9 @@ export default {
     }
   },
   computed: {
+    activePlayer () {
+      return this.gameConfig.players.includes(window.localStorage.getItem('playerId'))
+    },
     currentTurn () {
       return this.gameConfig.turns[this.turnIdx]
     },

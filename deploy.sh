@@ -1,4 +1,7 @@
 #!/bin/bash
-ssh escaperoom "mkdir -p ~/bhumi/log"
-scp -r dist escaperoom:~/bhumi/dist
-scp -r nginx_bhumi.conf escaperoom:~/bhumi/.
+cd "$(dirname "$0")"
+
+# ssh escaperoom "mkdir -p ~/bhumi/log"
+pnpm build
+scp -r dist escaperoom:~/bhumi/.
+# scp -r nginx_bhumi.conf escaperoom:~/bhumi/.

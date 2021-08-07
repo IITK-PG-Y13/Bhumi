@@ -125,7 +125,7 @@
 
 <script>
 import shapes from '../data/shapes'
-import db from '../firebase/init'
+import { db, dbRefs } from '../firebase/init'
 import ShowCard from './gameroom/ShowCard.vue'
 import ShowRecipe from './gameroom/ShowRecipe.vue'
 import ShowGod from './gameroom/ShowGod.vue'
@@ -157,7 +157,7 @@ export default {
     gameId: {
       immediate: true,
       handler () {
-        this.$rtdbBind('gameConfig', db.ref('games/' + this.gameId)).then(() => {
+        this.$rtdbBind('gameConfig', db.ref(dbRefs.gameConfig(this.gameId))).then(() => {
           // Loaded
           if (window.localStorage.getItem('playerId') == null ||
               this.gameConfig.players == null ||
@@ -357,7 +357,7 @@ export default {
     },
     saveState () {
       return db.
-        ref(`games/${this.gameId}/turns/${this.turnIdx}/playerState/${this.playerIdx}`).
+        ref(dbRefs.playerState(this.gameId, this.turnIdx, this.playerIdx)).
         set(JSON.stringify(this.map))
     },
     clickCoord (coords) {
@@ -382,7 +382,7 @@ export default {
         }
 
         db.
-          ref(`games/${this.gameId}/playerRecipes/${this.playerIdx}/${this.selectedCardInfo.idx}`).
+          ref(dbRefs.playerRecipes(this.gameId, this.playerIdx, this.selectedCardInfo.idx)).
           set(updatedRecipeCount)
 
         this.saveState()
@@ -404,7 +404,7 @@ export default {
           }
 
           db.
-            ref(`games/${this.gameId}/playerRecipes/${this.playerIdx}/${idx}`).
+            ref(dbRefs.playerRecipes(this.gameId, this.playerIdx, idx)).
             set(this.recipeCount()[idx] - cost)
         })
 
@@ -416,11 +416,11 @@ export default {
       Promise.all([
         this.saveState(),
         db.
-          ref(`games/${this.gameId}/turns/${this.turnIdx}/playersPlayed/${this.playerIdx}`).
+          ref(dbRefs.playersPlayed(this.gameId, this.turnIdx, this.playerIdx)).
           set(true)
       ]).then(() => {
           if (this.allPlayersPlayed) {
-            db.ref(`games/${this.gameId}/currentTurn`).set(this.turnIdx + 1)
+            db.ref(dbRefs.currentTurn(this.gameId)).set(this.turnIdx + 1)
           }
       })
     },

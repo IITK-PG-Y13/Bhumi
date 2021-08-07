@@ -25,7 +25,7 @@
 </template>
 
 <script>
-import db from '../firebase/init'
+import { db } from '../firebase/init'
 import Board from './gameroom/Board.vue'
 import ShowRecipe from './gameroom/ShowRecipe.vue'
 

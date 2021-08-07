@@ -64,7 +64,7 @@
 </template>
 
 <script>
-import db from '../firebase/init'
+import { db } from '../firebase/init'
 import GameCard from './gamelist/GameCard.vue'
 import create from '../data/create'
 import { v4 } from 'uuid'

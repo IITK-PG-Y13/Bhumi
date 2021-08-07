@@ -76,8 +76,11 @@ table.game td {
     background-color: #eee;
   }
 
+  &.shiny-red {
+    background: linear-gradient(45deg, #ff9955 65%, #ff5555);
+  }
+
   &.shiny-gold {
-    background-color: #d4af37;
     background: linear-gradient(45deg, #d4af37, gold);
   }
 

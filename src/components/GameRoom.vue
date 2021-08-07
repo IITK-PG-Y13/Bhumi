@@ -19,27 +19,50 @@
         </div>
         <div class="column is-6">
           <div class="columns is-multiline">
+            <div class="column is-12">
+              <div class="tabs is-centered is-fullwidth is-toggle">
+                <ul>
+                  <li :class="{'is-active': actionView == 'SELF'}">
+                    <a @click="actionView = 'SELF'">You</a>
+                  </li>
+                  <li v-for="idx in gameConfig.totalPlayers"
+                      :class="{'is-active': (actionView == 'OPP' && actionViewIdx == idx)}"
+                      v-if="idx != playerIdx">
+                    <a @click="actionView = 'OPP'; actionViewIdx = idx">Player {{ idx }}</a>
+                  </li>
+                </ul>
+              </div>
+            </div>
             <div class="column is-12 py-0">
-              <board :map="map"
-                     :hoverData="(needToPlay ? selectedCardInfo : null)"
-                     @click="clickCoord"></board>
+              <template v-if="actionView == 'SELF'">
+                <board :map="map"
+                       :hoverData="(needToPlay ? selectedCardInfo : null)"
+                       @click="clickCoord"></board>
+              </template>
+              <template v-if="actionView == 'OPP'">
+                <board :map="lastMapState(actionViewIdx)"
+                       :hoverData="(needToPlay ? selectedCardInfo : null)"
+                       @click="clickCoord"></board>
+              </template>
             </div>
             <div class="column is-12 is-paddingless">
               <hr style="margin: 0.5rem 0;"/>
             </div>
-            <div class="column is-4 box"
+            <div class="column is-4"
                  v-for="idx in gameConfig.totalPlayers"
                  v-if="idx != playerIdx">
-              <span class="has-text-weight-bold">
-                {{ idx == playerIdx ? "You" : "Player " + idx }}
-              </span>
-              <board :map="lastMapState(idx)" size="is-tiny"></board>
-              <div class="content">
-                <ul class="has-text-left is-size-7">
-                  <li v-for="recipe in gameConfig.recipes">
-                    {{ recipe.name }} x {{ recipeCount(idx)[recipe.idx] || 0 }}
-                  </li>
-                </ul>
+              <div class="box p-1">
+                <span class="has-text-weight-bold">
+                  {{ idx == playerIdx ? "You" : "Player " + idx }}
+                </span>
+                <board :map="lastMapState(idx)" size="is-micro"></board>
+                <div class="content">
+                  <ul class="has-text-left is-size-7">
+                    <li v-for="recipe in gameConfig.recipes">
+                      {{ recipe.name }} x {{ recipeCount(idx)[recipe.idx] || 0 }}
+                    </li>
+                  </ul>
+                </div>
               </div>
             </div>
           </div>
@@ -135,6 +158,8 @@ import TurnCards from './gameroom/TurnCards.vue'
 export default {
   data () {
     return {
+      actionView: 'SELF',
+      actionViewIdx: 0,
       loaded: false,
       gameConfig: null,
       playerIdx: null,
@@ -291,6 +316,7 @@ export default {
       this.selectedCardInfo = evt
     },
     clickable (i, j, type) {
+      // Base Checks
       if (!this.gameConfig) {
         return false
       }
@@ -299,6 +325,24 @@ export default {
         return false
       }
 
+      // Check if user is playing on the right board
+      if (this.actionView != 'SELF' && ['SEED', 'HARVEST'].includes(this.currentTurn.type)) {
+        return false
+      }
+
+      if (this.actionView != 'SELF' &&
+          this.currentTurn.type == 'WORSHIP' &&
+          this.selectedCardInfo.powerType == 'REJUVENATE') {
+        return false;
+      }
+
+      if (this.actionView == 'SELF' &&
+          this.currentTurn.type == 'WORSHIP' &&
+          this.selectedCardInfo.powerType == 'BURN') {
+        return false;
+      }
+
+      // Base conditions for map-click
       if (this.currentTurn.type == 'SEED') {
         if (this.map[[i, j]] && this.map[[i, j]] == 'used') {
           return false
@@ -341,7 +385,7 @@ export default {
       }
       let rc = this.gameConfig.playerRecipes[idx]
 
-      // Random stuff because RTDB is weird
+      // Required because RTDB is weird
       // Convert to array if playerRecipes is an object
       if (Array.isArray(rc)) {
         return rc
@@ -355,10 +399,18 @@ export default {
         return nrc
       }
     },
-    saveState () {
+    saveState (playerId, map) {
+      if (playerId == null) {
+        playerId = this.playerIdx
+      }
+
+      if (map == null) {
+        map = this.map
+      }
+
       return db.
-        ref(dbRefs.playerState(this.gameId, this.turnIdx, this.playerIdx)).
-        set(JSON.stringify(this.map))
+        ref(dbRefs.playerState(this.gameId, this.turnIdx, playerId)).
+        set(JSON.stringify(map))
     },
     clickCoord (coords) {
       if (this.currentTurn.type == 'SEED') {
@@ -390,6 +442,7 @@ export default {
       }
 
       if (this.currentTurn.type == 'WORSHIP') {
+        // Perform power
         if (this.selectedCardInfo.powerType == 'REJUVENATE') {
           coords.forEach(({ coord }) => {
             if (this.map[coord] == 'used') {
@@ -398,6 +451,15 @@ export default {
           })
         }
 
+        if (this.selectedCardInfo.powerType == 'BURN') {
+          coords.forEach(({ coord }) => {
+            let oppMap = this.lastMapState(this.actionViewIdx);
+            oppMap[coord] = 'used'
+            this.saveState(this.actionViewIdx, oppMap)
+          })
+        }
+
+        // Subtract cost
         this.selectedCardInfo.cost.forEach((cost, idx) => {
           if (cost == 0) {
             return

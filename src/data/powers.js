@@ -27,8 +27,23 @@ export default {
           ],
           powerType: "REJUVENATE",
           cost: [1, 1, 0]
+        },
+        {
+          name: "Agni",
+          description: "Indic God of fire",
+          shape: [
+            [ 0, 0, 0 ],
+            [ 0, 1, 0 ],
+            [ 0, 0, 0 ],
+          ],
+          powerType: "BURN",
+          cost: [0, 1, 0]
         }
       ],
     }
   ],
+  godPowerClasses: {
+    "REJUVENATE": "shiny-blue",
+    "BURN": "shiny-red"
+  }
 }

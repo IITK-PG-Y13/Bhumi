@@ -52,9 +52,7 @@ export default function createGame () {
   let godPowers = powerObj.godPowers.map((elem, idx) => {
     let godPower = randElem(elem.powers)
 
-    let type = {
-      "REJUVENATE": "shiny-blue"
-    }[godPower.powerType]
+    let type = powerObj.godPowerClasses[godPower.powerType]
 
     return {
       ...godPower,

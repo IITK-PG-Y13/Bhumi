@@ -3,15 +3,44 @@
   <div class="hero-body">
     <div class="container" v-if="gameConfig && loaded">
       <div class="columns is-multiline">
+        <div class="column is-6 is-offset-3">
+          <div v-for="(rank, idx) in ranks()"
+               :class="{
+                         notification: true,
+                         'is-gold': (idx == 0),
+                         'is-silver': (idx == 1),
+                         'is-bronze': (idx == 2),
+                         'is-default': (idx > 2)
+                       }">
+            <strong>
+              {{ rank.name }}: {{ rank.victoryPoints }} points
+            </strong>
+          </div>
+        </div>
+
+
+      </div>
+      <div class="columns is-multiline">
         <div class="column is-6" v-for="(map, idx) in maps">
-          <div class="columns is-multiline">
-            <div class="column is-12">
-              {{ idx == playerIdx ? "You" : "Player " + idx }}
-              <board :map="map"></board>
-            </div>
-            <div class="column is-4" v-for="recipe in gameConfig.recipes">
-              <show-recipe :recipe="recipe"
-                           :recipeCount="recipeCount(idx, recipe.idx)"></show-recipe>
+          <div class="box">
+            <div class="columns is-multiline">
+              <div class="column is-12">
+                <div class="notification is-default level">
+                  <strong class="level-left">
+                    {{ idx == playerIdx ? "You" : "Player " + idx }}
+                  </strong>
+                  <strong class="level-right">
+                    Victory Points: {{ victoryPoints(idx) }}
+                  </strong>
+                </div>
+              </div>
+              <div class="column is-12">
+                <board :map="map" size="is-small"></board>
+              </div>
+              <div class="column is-4" v-for="recipe in gameConfig.recipes">
+                <show-recipe :recipe="recipe"
+                             :recipeCount="recipeCount(idx, recipe.idx)"></show-recipe>
+              </div>
             </div>
           </div>
         </div>
@@ -110,7 +139,75 @@ export default {
       }
 
       return this.gameConfig.playerRecipes[playerId][recipeIdx]
+    },
+    recipeCountTotal (idx) {
+      if (idx == null) {
+        idx = this.playerIdx
+      }
+      if (!this.gameConfig.playerRecipes || !this.gameConfig.playerRecipes[idx]) {
+        return []
+      }
+      let rc = this.gameConfig.playerRecipes[idx]
+
+      // Required because RTDB is weird
+      // Convert to array if playerRecipes is an object
+      if (Array.isArray(rc)) {
+        return rc
+      } else {
+        let maxV = Math.max(...Object.keys(rc))
+        let nrc = new Array(maxV)
+        for (let i = 0; i < maxV; i++) {
+          nrc[i] = rc[i] || 0
+        }
+
+        return nrc
+      }
+    },
+    victoryPoints (idx) {
+      // FIXME: Currently copied from GameRoom.vue
+      let recipeCount = this.recipeCountTotal(idx)
+
+      let vp = 0
+
+      recipeCount.forEach((ct, idx) => {
+        switch (idx) {
+          case 0:
+            vp += ct
+            break
+          case 1:
+            vp += ct * 5
+            break
+          case 2:
+            vp += ct * 10
+            break
+        }
+      })
+
+      return vp
+    },
+    ranks () {
+      let score = []
+      for (let i = 1; i <= this.gameConfig.totalPlayers; i++) {
+        score.push({
+          name: i == this.playerIdx ? "You" : `Player ${idx}`,
+          victoryPoints: this.victoryPoints(i)
+        })
+      }
+
+      score.sort((a, b) => b.victoryPoints - a.victoryPoints)
+
+      return score
     }
   }
 }
 </script>
+
+<style lang="scss">
+.is-gold {
+  background: linear-gradient(0deg, gold 70%, #ffffdd);
+}
+
+.is-silver {
+  background: linear-gradient(0deg, silver 70%, #eee);
+}
+</style>

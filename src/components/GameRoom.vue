@@ -189,8 +189,17 @@ export default {
           // Loaded
           if (window.localStorage.getItem('playerId') == null ||
               this.gameConfig.players == null ||
-              !this.gameConfig.started ||
-              !this.gameConfig.active) {
+              !this.gameConfig.started) {
+
+            if (!this.gameConfig.active) {
+              this.$router.push({
+                name: 'GameEnd',
+                params: {
+                  gameId: this.gameId
+                }
+              })
+              return
+            }
 
             this.$router.push({
               path: '/',

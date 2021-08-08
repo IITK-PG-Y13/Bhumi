@@ -73,7 +73,7 @@ export default {
         return false;
       }
 
-      if (this.gameData.players.length >= this.gameData.totalPlayers) {
+      if (this.gameData.players.length > this.gameData.totalPlayers) {
         return false;
       }
 

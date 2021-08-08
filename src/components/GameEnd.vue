@@ -101,16 +101,9 @@ export default {
             })
           }
 
-          /*
           if (this.gameConfig.active) {
-            this.$router.push({
-              name: "GameRoom",
-              params: {
-                gameId: this.gameId
-              }
-            })
+            db.ref(`games/${this.gameId}/active`).set(false)
           }
-          */
 
           this.setGameData()
           this.loaded = true
@@ -125,12 +118,7 @@ export default {
       let latestTurn = this.gameConfig.turns.length - 1
 
       this.gameConfig.players.map((player, idx) => {
-        this.$set(this.maps, idx, JSON.parse(
-                                             this.
-                                               gameConfig.
-                                               turns[latestTurn].
-                                               playerState[idx]
-        ))
+        this.$set(this.maps, idx, JSON.parse(this.gameConfig.playerState[idx]))
       })
     },
     recipeCount (playerId, recipeIdx) {
@@ -141,6 +129,7 @@ export default {
       return this.gameConfig.playerRecipes[playerId][recipeIdx]
     },
     recipeCountTotal (idx) {
+      // FIXME: Currently copied from GameRoom.vue
       if (idx == null) {
         idx = this.playerIdx
       }

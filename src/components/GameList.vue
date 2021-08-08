@@ -49,18 +49,104 @@
              v-for="key in draftGames">
           <game-card :gameId="key[0]" :gameData="key[1]" :highlight="key[0] == highlight"></game-card>
         </div>
-        <div class="column is-12">
-          <button class="button is-success" @click="createNewGame">
-            Create New
-          </button>
+        <div class="column is-8 is-offset-2 box">
+          <div class="columns is-multiline">
+            <div class="column is-6">
+              <div class="field is-horizontal has-text-left">
+                <div class="field-label" style="flex-basis: auto; text-align: left">
+                  <label class="label">Number of Turns</label>
+                </div>
+                <div class="field-body">
+                  <div class="field">
+                    <div class="control">
+                      <label class="radio">
+                        <input type="radio" v-model="newGameConfig.turns" value="5">
+                        5
+                      </label>
+                      <label class="radio">
+                        <input type="radio" v-model="newGameConfig.turns" value="15">
+                        15
+                      </label>
+                      <label class="radio">
+                        <input type="radio" v-model="newGameConfig.turns" value="30">
+                        30
+                      </label>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="column is-6">
+              <div class="field is-horizontal has-text-left">
+                <div class="field-label" style="flex-basis: auto; text-align: left">
+                  <label class="label">Allow destructive God Powers</label>
+                </div>
+                <div class="field-body">
+                  <div class="field">
+                    <div class="control">
+                      <label class="radio">
+                        <input type="radio" v-model="newGameConfig.noDestructivePowers" :value="false">
+                        Yes
+                      </label>
+                      <label class="radio">
+                        <input type="radio" v-model="newGameConfig.noDestructivePowers" :value="true">
+                        No
+                      </label>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="column is-6">
+              <div class="field is-horizontal has-text-left">
+                <div class="field-label" style="flex-basis: auto; text-align: left">
+                  <label class="label">Maximum number of Players</label>
+                </div>
+                <div class="field-body">
+                  <div class="field">
+                    <div class="control">
+                      <label class="radio">
+                        <input type="radio" v-model="newGameConfig.maxPlayers" value="2">
+                        2
+                      </label>
+                      <label class="radio">
+                        <input type="radio" v-model="newGameConfig.maxPlayers" value="3">
+                        3
+                      </label>
+                      <label class="radio">
+                        <input type="radio" v-model="newGameConfig.maxPlayers" value="4">
+                        4
+                      </label>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="column is-12">
+              <button class="button is-success" @click="createNewGame">
+                Create New
+              </button>
+            </div>
+          </div>
         </div>
         <div class="column is-12" v-if="liveGames.length > 0">
+          <hr/>
           <h2 class="title is-4">
             Spectate Games
           </h2>
         </div>
         <div class="column is-6"
              v-for="key in liveGames">
+          <game-card :gameId="key[0]" :gameData="key[1]"></game-card>
+        </div>
+        <div class="column is-12" v-if="archivedGames.length > 0">
+          <hr/>
+          <h2 class="title is-4">
+            Your Archived Games
+          </h2>
+        </div>
+        <div class="column is-6"
+             v-for="key in archivedGames">
           <game-card :gameId="key[0]" :gameData="key[1]"></game-card>
         </div>
       </div>
@@ -75,7 +161,7 @@
 <script>
 import { db } from '../firebase/init'
 import GameCard from './gamelist/GameCard.vue'
-import create from '../data/create'
+import createGame from '../data/create'
 import { v4 } from 'uuid'
 
 let TUTORIAL_CARDS = [
@@ -110,7 +196,12 @@ export default {
       itemId: 1,
       tutorialCards: TUTORIAL_CARDS,
       gameList: null,
-      highlight: null
+      highlight: null,
+      newGameConfig: {
+        turns: 30,
+        noDestructivePowers: false,
+        maxPlayers: 4
+      }
     }
   },
   components: {
@@ -161,11 +252,19 @@ export default {
                key[1].players &&
                !key[1].players.includes(window.localStorage.getItem('playerId'))
       });
+    },
+    archivedGames () {
+      return Object.entries(this.gameList).filter((key) => {
+        return !key[1].active &&
+               key[1].started &&
+               key[1].players &&
+               key[1].players.includes(window.localStorage.getItem('playerId'))
+      });
     }
   },
   methods: {
     createNewGame () {
-      let outputJson = create()
+      let outputJson = createGame(this.newGameConfig)
       outputJson.players = [ null, window.localStorage.getItem('playerId') ]
 
       let gameId = uuid6digit()

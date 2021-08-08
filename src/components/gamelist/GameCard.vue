@@ -57,6 +57,11 @@ export default {
     setTimeout(() => {
       this.isHighlight = false;
     }, 5000)
+
+    if (this.isHighlight) {
+      this.$el.scrollIntoView();
+      window.scrollTo(0, window.scrollY - 70)
+    }
   },
   methods: {
     canJoin () {

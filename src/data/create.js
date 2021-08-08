@@ -23,8 +23,12 @@ function shuffleArray(array) {
 const tileTypes = ['yellow', 'green', 'brown', 'blue']
 const tileShapes = Object.keys(shapes.shapes)
 
-export default function createGame () {
+export default function createGame (config) {
   let numberOfTurns = 30;
+  if (config != null && config.turns != null) {
+    numberOfTurns = parseInt(config.turns)
+  }
+
   let cardsPerTurnMin = 2;
   let cardsPerTurnMax = 3;
 
@@ -33,6 +37,10 @@ export default function createGame () {
     started: false,
     currentTurn: 0,
     totalPlayers: 4,
+  }
+
+  if (config != null && config.maxPlayers != null) {
+    out.totalPlayers = parseInt(config.maxPlayers)
   }
 
   let recipes = recipeObj.products.map((elem, idx) => {
@@ -50,7 +58,13 @@ export default function createGame () {
   out.recipes = recipes
 
   let godPowers = powerObj.godPowers.map((elem, idx) => {
-    let godPower = randElem(elem.powers)
+    let availablePowers = elem.powers
+
+    if (config != null && config.noDestructivePowers) {
+      availablePowers = elem.powers.filter((p) => ["REJUVENATE"].includes(p.powerType))
+    }
+
+    let godPower = randElem(availablePowers)
 
     let type = powerObj.godPowerClasses[godPower.powerType]
 

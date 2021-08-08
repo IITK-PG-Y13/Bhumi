@@ -178,7 +178,7 @@ export default {
       let score = []
       for (let i = 1; i <= this.gameConfig.totalPlayers; i++) {
         score.push({
-          name: i == this.playerIdx ? "You" : `Player ${idx}`,
+          name: i == this.playerIdx ? "You" : `Player ${i}`,
           victoryPoints: this.victoryPoints(i)
         })
       }

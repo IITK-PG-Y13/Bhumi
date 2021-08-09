@@ -19,8 +19,8 @@
         </div>
         <div class="column is-6">
           <div class="columns is-multiline">
-            <div class="column is-12">
-              <div class="tabs is-centered is-fullwidth is-toggle">
+            <div class="column is-12" v-if="gameConfig.totalPlayers > 1">
+              <div class="tabs is-centered is-fullwidth is-toggle is-primary">
                 <ul>
                   <li :class="{'is-active': actionView == 'SELF'}" v-if="activePlayer">
                     <a @click="actionView = 'SELF'">You</a>
@@ -51,7 +51,7 @@
             <div class="column is-4"
                  v-for="idx in gameConfig.totalPlayers"
                  v-if="idx != playerIdx">
-              <div class="box p-1">
+              <div class="box p-1" @click="actionView = 'OPP'; actionViewIdx = idx">
                 <span class="has-text-weight-bold">
                   {{ idx == playerIdx ? "You" : "Player " + idx }}
                 </span>
@@ -512,6 +512,7 @@ export default {
       this.selectedCardInfo = {}
       this.cardIdx = 0
       this.turnStarted = false
+      this.actionView = 'SELF'
       this.turnIdx = this.gameConfig.currentTurn
 
       if (this.turnIdx >= this.gameConfig.turns.length) {
@@ -545,5 +546,11 @@ export default {
       }
     }
   }
+}
+
+.tabs.is-primary > ul > li.is-active > a {
+  background-color: #ebfffc;
+  color: black;
+  border-color: #00d1b2;
 }
 </style>

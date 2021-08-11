@@ -163,6 +163,8 @@
 </template>
 
 <script>
+import 'animate.css'
+
 import shapes from '../data/shapes'
 import { db, dbRefs } from '../firebase/init'
 import { ensureArray } from '../util/util'
@@ -252,7 +254,9 @@ export default {
     'gameConfig.chatData': {
       deep: true,
       handler () {
-        this.$refs['chatTab'].classList.add('animate__animated', 'animate__bounce', 'has-background-warning-light')
+        if (this.$refs['chatTab']) {
+          this.$refs['chatTab'].classList.add('animate__animated', 'animate__bounce', 'has-background-warning-light')
+        }
       }
     }
   },
@@ -384,7 +388,7 @@ export default {
 
       // Base conditions for map-click
       if (this.currentTurn.type == 'SEED') {
-        if (this.map[[i, j]] && this.map[[i, j]] == 'used') {
+        if (this.map[[i, j]] && this.map[[i, j]].state == 'used') {
           return false
         }
 
@@ -392,7 +396,7 @@ export default {
       }
 
       if (this.currentTurn.type == 'HARVEST') {
-        if (!(this.map[[i, j]] && type == this.map[[i, j]])) {
+        if (!(this.map[[i, j]] && type == this.map[[i, j]].state)) {
           return false
         }
 
@@ -446,7 +450,11 @@ export default {
     clickCoord (coords) {
       if (this.currentTurn.type == 'SEED') {
         coords.forEach(({ coord, type }) => {
-          this.$set(this.map, coord, type)
+          if (!this.map[coord]) {
+            this.$set(this.map, coord, {})
+          }
+
+          this.$set(this.map[coord], 'state', type)
         })
 
         this.passTurn()
@@ -454,7 +462,11 @@ export default {
 
       if (this.currentTurn.type == 'HARVEST') {
         coords.forEach(({ coord, type }) => {
-          this.$set(this.map, coord, 'used')
+          if (!this.map[coord]) {
+            this.$set(this.map, coord, {})
+          }
+
+          this.$set(this.map[coord], 'state', 'used')
         })
 
         let updatedRecipeCount = this.recipeCount()[this.selectedCardInfo.idx]
@@ -476,8 +488,8 @@ export default {
         // Perform power
         if (this.selectedCardInfo.powerType == 'REJUVENATE') {
           coords.forEach(({ coord }) => {
-            if (this.map[coord] == 'used') {
-              this.$set(this.map, coord, null)
+            if (this.map[coord] && this.map[coord].state == 'used') {
+              this.$delete(this.map[coord], 'state')
             }
           })
         }
@@ -485,7 +497,10 @@ export default {
         if (this.selectedCardInfo.powerType == 'BURN') {
           coords.forEach(({ coord }) => {
             let oppMap = this.lastMapState(this.actionViewIdx);
-            oppMap[coord] = 'used'
+            if (!oppMap[coord]) {
+              oppMap[coord] = {}
+            }
+            oppMap[coord].state = 'used'
             this.saveState(this.actionViewIdx, oppMap)
           })
         }

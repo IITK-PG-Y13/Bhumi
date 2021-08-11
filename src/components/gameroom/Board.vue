@@ -13,8 +13,6 @@
 </template>
 
 <script>
-import 'animate.css'
-
 export default {
   props: ['map', 'hoverData', 'size'],
   data () {
@@ -32,7 +30,7 @@ export default {
           if (oldMap[key] && !newMap[key]) {
             changedKeys[key] = 'base'
           } else if (!oldMap[key] || oldMap[key] != newMap[key]) {
-            changedKeys[key] = value
+            changedKeys[key] = value.state
           }
         })
 
@@ -64,23 +62,34 @@ export default {
       }
     },
     getClass (i, j) {
-      let animateClass = ""
+      let animateClass = []
 
       if (this.changedKeys[i + "," + j]) {
         if (this.changedKeys[i + "," + j] == 'used') {
-          animateClass = " animate__animated animate__fadeIn"
+          animateClass = ["animate__animated", "animate__fadeIn"]
         } else if (this.changedKeys[i + "," + j] == 'base') {
-          animateClass = " animate__animated animate__flipInX"
+          animateClass = ["animate__animated", "animate__flipInX"]
         } else {
-          animateClass = " animate__animated animate__bounceIn"
+          animateClass = ["animate__animated", "animate__bounceIn"]
         }
       }
 
-      if (this.map[[i, j]] != null) {
-        return this.map[[i, j]] + animateClass
+      let baseClass = ""
+
+      if (this.map[[i, j]] != null && this.map[[i, j]].state != null) {
+        baseClass = this.map[[i, j]].state
+      } else {
+        baseClass = "base"
       }
 
-      return 'base' + animateClass
+      let otherClasses = []
+
+      if (this.map[[i, j]] != null && this.map[[i, j]].protected) {
+        otherClasses.push('protected')
+      }
+
+      return [ baseClass ] + animateClass + otherClasses
+
     },
     clickable (i, j) {
       if (!this.hoverData) {

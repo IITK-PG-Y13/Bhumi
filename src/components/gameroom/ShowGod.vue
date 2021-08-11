@@ -2,7 +2,7 @@
   <div class="card is-tiny">
     <div class="card-header">
       <div class="card-header-title has-background-success-light">
-        Lv {{ godPower.idx + 1 }}: {{ godPower.name }}
+        {{ godPower.name }}
       </div>
     </div>
     <div class="card-content content has-text-left py-2 mb-0 px-0">

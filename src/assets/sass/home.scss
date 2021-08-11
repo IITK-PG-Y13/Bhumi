@@ -28,6 +28,10 @@ table.game {
 
     td {
       padding: 4px;
+
+      &:before {
+        border-width: 1px !important;
+      }
     }
   }
 }
@@ -75,6 +79,18 @@ table.game td {
   &.white {
     background-color: #eee;
   }
+
+  &.protected {
+    &:before {
+      position: absolute;
+      content: "";
+      left: 0;
+      right: 0;
+      top: 0;
+      bottom: 0;
+      border: 3px solid #6de86d;
+    }
+  }
 }
 
 .shiny-red {
@@ -87,4 +103,8 @@ table.game td {
 
 .shiny-blue {
   background: linear-gradient(135deg, #2a8ee0 75%, #87bcea) !important;
+}
+
+.shiny-green {
+  background: linear-gradient(225deg, #6de86d 75%, #ddffee) !important;
 }

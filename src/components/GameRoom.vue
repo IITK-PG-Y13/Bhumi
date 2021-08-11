@@ -253,7 +253,11 @@ export default {
     },
     'gameConfig.chatData': {
       deep: true,
-      handler () {
+      handler (newChatData, oldChatData) {
+        if (ensureArray(newChatData).length == ensureArray(oldChatData)) {
+          return
+        }
+
         if (this.$refs['chatTab']) {
           this.$refs['chatTab'].classList.add('animate__animated', 'animate__bounce', 'has-background-warning-light')
         }
@@ -380,6 +384,12 @@ export default {
         return false;
       }
 
+      if (this.actionView != 'SELF' &&
+          this.currentTurn.type == 'WORSHIP' &&
+          this.selectedCardInfo.powerType == 'GUARD') {
+        return false;
+      }
+
       if (this.actionView == 'SELF' &&
           this.currentTurn.type == 'WORSHIP' &&
           this.selectedCardInfo.powerType == 'BURN') {
@@ -495,13 +505,28 @@ export default {
         }
 
         if (this.selectedCardInfo.powerType == 'BURN') {
+          let oppMap = this.lastMapState(this.actionViewIdx);
           coords.forEach(({ coord }) => {
-            let oppMap = this.lastMapState(this.actionViewIdx);
             if (!oppMap[coord]) {
               oppMap[coord] = {}
             }
-            oppMap[coord].state = 'used'
-            this.saveState(this.actionViewIdx, oppMap)
+
+            if (!oppMap[coord].protected) {
+              oppMap[coord].state = 'used'
+            }
+          })
+          this.saveState(this.actionViewIdx, oppMap)
+        }
+
+        if (this.selectedCardInfo.powerType == 'GUARD') {
+          coords.forEach(({ coord }) => {
+            if (!this.map[coord]) {
+              this.$set(this.map, coord, {})
+            }
+
+            if (this.map[coord].state != 'used') {
+              this.$set(this.map[coord], 'protected', true)
+            }
           })
         }
 

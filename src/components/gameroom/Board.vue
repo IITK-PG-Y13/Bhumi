@@ -88,7 +88,7 @@ export default {
         otherClasses.push('protected')
       }
 
-      return [ baseClass ] + animateClass + otherClasses
+      return [ baseClass ].concat(animateClass, otherClasses)
 
     },
     clickable (i, j) {

@@ -12,11 +12,7 @@ export default {
           ],
           powerType: "REJUVENATE",
           cost: [1, 0, 0]
-        }
-      ],
-    },
-    {
-      powers: [
+        },
         {
           name: "Varuna",
           description: "Indic God of the ocean",
@@ -28,6 +24,10 @@ export default {
           powerType: "REJUVENATE",
           cost: [1, 1, 0]
         },
+      ],
+    },
+    {
+      powers: [
         {
           name: "Agni",
           description: "Indic God of fire",
@@ -40,14 +40,31 @@ export default {
           cost: [0, 1, 0]
         }
       ],
-    }
+    },
+    {
+      powers: [
+        {
+          name: "Himavat",
+          description: "Mountain God of the Himalayas",
+          shape: [
+            [ 0, 1, 0 ],
+            [ 1, 1, 1 ],
+            [ 0, 1, 0 ],
+          ],
+          powerType: "GUARD",
+          cost: [1, 0, 0]
+        }
+      ],
+    },
   ],
   godPowerClasses: {
     "REJUVENATE": "shiny-blue",
-    "BURN": "shiny-red"
+    "BURN": "shiny-red",
+    "GUARD": "shiny-green"
   },
   godPowerDescriptions: {
     "REJUVENATE": "Restores previously harvested land",
-    "BURN": "Burns opponent's land"
+    "BURN": "Burns opponent's land",
+    "GUARD": "Prevents opponents from burning your land"
   }
 }

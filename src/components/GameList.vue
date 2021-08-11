@@ -5,27 +5,7 @@
       <h1 class="title is-3">
         Welcome to Bhumi - The Game of Nurture
       </h1>
-      <div class="columns">
-        <div class="column is-8 is-offset-2 box is-relative">
-          <div class="page-bar">
-            <div v-for="p in tutorialCards.length"
-                 :class="{page: true, selected: (itemId == p)}"
-                 @click="itemId = p">
-              {{p}}
-            </div>
-          </div>
-          <div class="columns is-vcentered"
-               v-for="(card, idx) in tutorialCards"
-               v-if="itemId == idx + 1">
-            <div class="column is-3">
-              <img :src="card.image" class="image is-128x128 mr-6">
-            </div>
-            <div class="column is-9 has-text-left content is-size-5 is-italic">
-              {{ card.text }}
-            </div>
-          </div>
-        </div>
-      </div>
+      <intro></intro>
     </div>
   </div>
   <div class="hero-body pt-6">
@@ -50,84 +30,7 @@
           <game-card :gameId="key[0]" :gameData="key[1]" :highlight="key[0] == highlight"></game-card>
         </div>
         <div class="column is-8 is-offset-2 box">
-          <div class="columns is-multiline">
-            <div class="column is-6">
-              <div class="field is-horizontal has-text-left">
-                <div class="field-label" style="flex-basis: auto; text-align: left">
-                  <label class="label">Number of Turns</label>
-                </div>
-                <div class="field-body">
-                  <div class="field">
-                    <div class="control">
-                      <label class="radio">
-                        <input type="radio" v-model="newGameConfig.turns" value="5">
-                        5
-                      </label>
-                      <label class="radio">
-                        <input type="radio" v-model="newGameConfig.turns" value="15">
-                        15
-                      </label>
-                      <label class="radio">
-                        <input type="radio" v-model="newGameConfig.turns" value="30">
-                        30
-                      </label>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div class="column is-6">
-              <div class="field is-horizontal has-text-left">
-                <div class="field-label" style="flex-basis: auto; text-align: left">
-                  <label class="label">Allow destructive God Powers</label>
-                </div>
-                <div class="field-body">
-                  <div class="field">
-                    <div class="control">
-                      <label class="radio">
-                        <input type="radio" v-model="newGameConfig.noDestructivePowers" :value="false">
-                        Yes
-                      </label>
-                      <label class="radio">
-                        <input type="radio" v-model="newGameConfig.noDestructivePowers" :value="true">
-                        No
-                      </label>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div class="column is-6">
-              <div class="field is-horizontal has-text-left">
-                <div class="field-label" style="flex-basis: auto; text-align: left">
-                  <label class="label">Maximum number of Players</label>
-                </div>
-                <div class="field-body">
-                  <div class="field">
-                    <div class="control">
-                      <label class="radio">
-                        <input type="radio" v-model="newGameConfig.maxPlayers" value="2">
-                        2
-                      </label>
-                      <label class="radio">
-                        <input type="radio" v-model="newGameConfig.maxPlayers" value="3">
-                        3
-                      </label>
-                      <label class="radio">
-                        <input type="radio" v-model="newGameConfig.maxPlayers" value="4">
-                        4
-                      </label>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div class="column is-12">
-              <button class="button is-success" @click="createNewGame">
-                Create New
-              </button>
-            </div>
-          </div>
+          <create-new-game @submit="createNewGame"></create-new-game>
         </div>
         <div class="column is-12" v-if="liveGames.length > 0">
           <hr/>
@@ -161,23 +64,10 @@
 <script>
 import { db } from '../firebase/init'
 import GameCard from './gamelist/GameCard.vue'
+import Intro from './gamelist/Intro.vue'
+import CreateNewGame from './gamelist/CreateNewGame.vue'
 import createGame from '../data/create'
 import { v4 } from 'uuid'
-
-let TUTORIAL_CARDS = [
-  {
-    image: "static/home_image.png",
-    text: "Bhumi is a game of resource allocation. You are a farmer, nurturing and nourishing your land."
-  },
-  {
-    image: "static/home_image.png",
-    text: "Either trade with your neighbours to mutually grow your farm, or ask the Gods to attack their crops!"
-  },
-  {
-    image: "static/home_image.png",
-    text: "At the end of the game, the best harvest wins!"
-  },
-]
 
 function uuid6digit () {
   let str = "QWERTYUIOPASDFGHJKLZXCVBNM"
@@ -193,22 +83,53 @@ function uuid6digit () {
 export default {
   data () {
     return {
-      itemId: 1,
-      tutorialCards: TUTORIAL_CARDS,
+      activeButNotStarted: [],
       gameList: null,
       highlight: null,
-      newGameConfig: {
-        turns: 30,
-        noDestructivePowers: false,
-        maxPlayers: 4
-      }
     }
   },
   components: {
-    GameCard
+    GameCard,
+    Intro,
+    CreateNewGame
   },
   firebase: {
     gameList: db.ref('games')
+  },
+  watch: {
+    'gameList': {
+      deep: true,
+      immediate: true,
+      handler (gameList) {
+        if (!gameList) {
+          return
+        }
+        this.activeButNotStarted.forEach((key) => {
+          if (gameList[key] && gameList[key].active && gameList[key].started) {
+            let routeData = this.$router.resolve({
+              name: "GameRoom",
+              params: {
+                gameId: key
+              }
+            })
+
+            window.open(routeData.href, '_blank')
+          }
+        })
+        // Update List
+        Object.entries(gameList).filter((key) => {
+          return key[1].active &&
+                 !key[1].started &&
+                 key[1].players &&
+                 key[1].players.includes(window.localStorage.getItem('playerId')) &&
+                 key[1].players.indexOf(window.localStorage.getItem('playerId')) != 1
+        }).forEach((key) => {
+          if (!this.activeButNotStarted.includes(key[0])) {
+            this.activeButNotStarted.push(key[0])
+          }
+        })
+      }
+    }
   },
   beforeRouteEnter (to, from, next) {
     next((vm) => {
@@ -221,14 +142,6 @@ export default {
     if (window.localStorage.getItem('playerId') == null) {
       window.localStorage.setItem('playerId', v4())
     }
-  },
-  mounted () {
-  //setInterval(() => {
-  //  this.itemId = (this.itemId + 1) % this.tutorialCards.length
-  //  if (this.itemId == 0) {
-  //    this.itemId = this.tutorialCards.length
-  //  }
-  //}, 20000)
   },
   computed: {
     activeGames () {
@@ -263,8 +176,8 @@ export default {
     }
   },
   methods: {
-    createNewGame () {
-      let outputJson = createGame(this.newGameConfig)
+    createNewGame (newGameConfig) {
+      let outputJson = createGame(newGameConfig)
       outputJson.players = [ null, window.localStorage.getItem('playerId') ]
 
       let gameId = uuid6digit()

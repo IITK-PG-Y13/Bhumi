@@ -42,7 +42,7 @@ export default {
   props: ['gameId', 'gameData', 'highlight'],
   data () {
     return {
-      isHighlight: this.highlight
+      isHighlight: this.highlight,
     }
   },
   computed: {

@@ -30,6 +30,12 @@
                       v-if="idx != playerIdx">
                     <a @click="actionView = 'OPP'; actionViewIdx = idx">Player {{ idx }}</a>
                   </li>
+                  <li :class="{'is-active': actionView == 'CHAT'}" ref="chatTab">
+                    <a @click="actionView = 'CHAT'">Chat</a>
+                  </li>
+                  <li :class="{'is-active': actionView == 'TRADE'}" ref="tradeTab">
+                    <a @click="actionView = 'TRADE'">Trade</a>
+                  </li>
                 </ul>
               </div>
             </div>
@@ -38,32 +44,39 @@
                 <board :map="map"
                        :hoverData="(needToPlay ? selectedCardInfo : null)"
                        @click="clickCoord"></board>
+                <recipe-list :recipes="gameConfig.recipes"
+                             :recipeCount="recipeCount()"></recipe-list>
+                <hr style="margin: 0.5rem 0;"/>
+                <div class="column is-4"
+                     v-for="idx in gameConfig.totalPlayers"
+                     v-if="idx != playerIdx">
+                  <div class="box p-1 pointer" @click="actionView = 'OPP'; actionViewIdx = idx">
+                    <span class="has-text-weight-bold">
+                      {{ idx == playerIdx ? "You" : "Player " + idx }}
+                    </span>
+                    <board :map="lastMapState(idx)" size="is-micro"></board>
+                    <recipe-list :recipes="gameConfig.recipes"
+                                 :recipeCount="recipeCount(idx)"
+                                 size="are-small"></recipe-list>
+                  </div>
+                </div>
               </template>
               <template v-if="actionView == 'OPP'">
                 <board :map="lastMapState(actionViewIdx)"
                        :hoverData="(needToPlay ? selectedCardInfo : null)"
                        @click="clickCoord"></board>
+                <recipe-list :recipes="gameConfig.recipes"
+                             :recipeCount="recipeCount(actionViewIdx)"></recipe-list>
               </template>
-            </div>
-            <div class="column is-12 is-paddingless">
-              <hr style="margin: 0.5rem 0;"/>
-            </div>
-            <div class="column is-4"
-                 v-for="idx in gameConfig.totalPlayers"
-                 v-if="idx != playerIdx">
-              <div class="box p-1" @click="actionView = 'OPP'; actionViewIdx = idx">
-                <span class="has-text-weight-bold">
-                  {{ idx == playerIdx ? "You" : "Player " + idx }}
-                </span>
-                <board :map="lastMapState(idx)" size="is-micro"></board>
-                <div class="content">
-                  <ul class="has-text-left is-size-7">
-                    <li v-for="recipe in gameConfig.recipes">
-                      {{ recipe.name }} x {{ recipeCount(idx)[recipe.idx] || 0 }}
-                    </li>
-                  </ul>
-                </div>
-              </div>
+              <template v-if="actionView == 'CHAT'">
+                <chat :chatData="gameConfig.chatData"
+                      :activePlayer="activePlayer"
+                      :activePlayerIdx="playerIdx"
+                      @send="sendMessage"></chat>
+              </template>
+              <template v-if="actionView == 'TRADE'">
+                <i>Coming Soon!</i>
+              </template>
             </div>
           </div>
         </div>
@@ -152,10 +165,13 @@
 <script>
 import shapes from '../data/shapes'
 import { db, dbRefs } from '../firebase/init'
+import { ensureArray } from '../util/util'
 import ShowCard from './gameroom/ShowCard.vue'
 import ShowRecipe from './gameroom/ShowRecipe.vue'
+import RecipeList from './gameroom/RecipeList.vue'
 import ShowGod from './gameroom/ShowGod.vue'
 import Board from './gameroom/Board.vue'
+import Chat from './gameroom/Chat.vue'
 import TurnCards from './gameroom/TurnCards.vue'
 
 export default {
@@ -177,8 +193,10 @@ export default {
     ShowCard,
     Board,
     ShowRecipe,
+    RecipeList,
     TurnCards,
     ShowGod,
+    Chat
   },
   props: [ 'gameId' ],
   watch: {
@@ -229,6 +247,12 @@ export default {
       deep: true,
       handler () {
         this.map = this.lastMapState(this.playerIdx)
+      }
+    },
+    'gameConfig.chatData': {
+      deep: true,
+      handler () {
+        this.$refs['chatTab'].classList.add('animate__animated', 'animate__bounce', 'has-background-warning-light')
       }
     }
   },
@@ -319,6 +343,18 @@ export default {
     selectCard (evt) {
       this.selectedCardInfo = evt
     },
+    sendMessage (evt) {
+      let chatData = ensureArray(this.gameConfig.chatData)
+
+      chatData.push({
+        playerIdx: this.playerIdx,
+        message: evt.message
+      })
+
+      db.
+        ref(dbRefs.chatData(this.gameId)).
+        set(chatData)
+    },
     clickable (i, j, type) {
       // Base Checks
       if (!this.gameConfig) {
@@ -389,19 +425,7 @@ export default {
       }
       let rc = this.gameConfig.playerRecipes[idx]
 
-      // Required because RTDB is weird
-      // Convert to array if playerRecipes is an object
-      if (Array.isArray(rc)) {
-        return rc
-      } else {
-        let maxV = Math.max(...Object.keys(rc))
-        let nrc = new Array(maxV)
-        for (let i = 0; i < maxV; i++) {
-          nrc[i] = rc[i] || 0
-        }
-
-        return nrc
-      }
+      return ensureArray(rc)
     },
     saveState (playerId, map) {
       if (playerId == null) {

@@ -57,6 +57,7 @@
 import { db } from '../firebase/init'
 import Board from './gameroom/Board.vue'
 import ShowRecipe from './gameroom/ShowRecipe.vue'
+import { ensureArray } from '../util/util'
 
 export default {
   data () {
@@ -129,7 +130,6 @@ export default {
       return this.gameConfig.playerRecipes[playerId][recipeIdx]
     },
     recipeCountTotal (idx) {
-      // FIXME: Currently copied from GameRoom.vue
       if (idx == null) {
         idx = this.playerIdx
       }
@@ -138,19 +138,7 @@ export default {
       }
       let rc = this.gameConfig.playerRecipes[idx]
 
-      // Required because RTDB is weird
-      // Convert to array if playerRecipes is an object
-      if (Array.isArray(rc)) {
-        return rc
-      } else {
-        let maxV = Math.max(...Object.keys(rc))
-        let nrc = new Array(maxV)
-        for (let i = 0; i < maxV; i++) {
-          nrc[i] = rc[i] || 0
-        }
-
-        return nrc
-      }
+      return ensureArray(rc)
     },
     victoryPoints (idx) {
       // FIXME: Currently copied from GameRoom.vue

@@ -22,6 +22,9 @@ let dbRefs = {
     },
     currentTurn (gameId) {
         return `games/${gameId}/currentTurn`
+    },
+    chatData (gameId) {
+        return `games/${gameId}/chatData`
     }
 }
 let db = firebaseApp.database()

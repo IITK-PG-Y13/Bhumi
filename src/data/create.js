@@ -57,21 +57,27 @@ export default function createGame (config) {
 
   out.recipes = recipes
 
-  let godPowers = powerObj.godPowers.map((elem, idx) => {
-    let availablePowers = elem.powers
+  let godPowers = []
 
+  powerObj.godPowers.forEach((elem, idx) => {
     if (config != null && config.noDestructivePowers) {
-      availablePowers = elem.powers.filter((p) => ["REJUVENATE"].includes(p.powerType))
+      if (["BURN"].includes(elem.powerType)) {
+        return
+      }
     }
 
-    let godPower = randElem(availablePowers)
+    let availableShapes = elem.shapes
+    let selectedShape = randElem(availableShapes)
 
-    let type = powerObj.godPowerClasses[godPower.powerType]
+    let type = powerObj.godPowerClasses[elem.powerType]
 
-    return {
-      ...godPower,
-      type,
-    }
+    godPowers.push({
+      name: elem.name,
+      description: elem.description,
+      powerType: elem.powerType,
+      type: powerObj.godPowerClasses[elem.powerType],
+      ...selectedShape
+    })
   })
 
   out.godPowers = godPowers

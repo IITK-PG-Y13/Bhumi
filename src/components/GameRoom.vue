@@ -188,7 +188,8 @@ export default {
       cardIdx: 0,
       selectedCardInfo: {},
       turnStarted: false,
-      map: {}
+      map: {},
+      seenChatLength: 0
     }
   },
   components: {
@@ -254,9 +255,11 @@ export default {
     'gameConfig.chatData': {
       deep: true,
       handler (newChatData, oldChatData) {
-        if (ensureArray(newChatData).length == ensureArray(oldChatData)) {
+        if (ensureArray(newChatData).length == this.seenChatLength) {
           return
         }
+
+        this.seenChatLength = ensureArray(newChatData).length
 
         if (this.$refs['chatTab']) {
           this.$refs['chatTab'].classList.add('animate__animated', 'animate__bounce', 'has-background-warning-light')
@@ -477,6 +480,7 @@ export default {
           }
 
           this.$set(this.map[coord], 'state', 'used')
+          this.$delete(this.map[coord], 'protected')
         })
 
         let updatedRecipeCount = this.recipeCount()[this.selectedCardInfo.idx]

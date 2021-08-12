@@ -9,16 +9,16 @@
           <div class="field">
             <div class="control">
               <label class="radio">
-                <input type="radio" v-model="newGameConfig.turns" value="5">
-                5
+                <input type="radio" v-model="newGameConfig.turns" value="6">
+                6
               </label>
               <label class="radio">
-                <input type="radio" v-model="newGameConfig.turns" value="15">
-                15
+                <input type="radio" v-model="newGameConfig.turns" value="12">
+                12
               </label>
               <label class="radio">
-                <input type="radio" v-model="newGameConfig.turns" value="30">
-                30
+                <input type="radio" v-model="newGameConfig.turns" value="36">
+                36
               </label>
             </div>
           </div>

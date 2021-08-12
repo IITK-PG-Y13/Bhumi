@@ -15,6 +15,14 @@ export default {
         },
         {
           shape: [
+            [ 0, 1, 0 ],
+            [ 1, 1, 0 ],
+            [ 0, 0, 0 ],
+          ],
+          cost: [1, 0, 0]
+        },
+        {
+          shape: [
             [ 1, 1, 1 ],
             [ 1, 1, 1 ],
             [ 1, 1, 1 ],
@@ -34,7 +42,15 @@ export default {
             [ 0, 1, 0 ],
             [ 0, 0, 0 ],
           ],
-          cost: [0, 1, 0]
+          cost: [2, 0, 0]
+        },
+        {
+          shape: [
+            [ 1, 0, 0 ],
+            [ 0, 1, 0 ],
+            [ 0, 0, 1 ],
+          ],
+          cost: [1, 1, 0]
         }
       ],
     },
@@ -43,6 +59,14 @@ export default {
       description: "Mountain God of the Himalayas",
       powerType: "GUARD",
       shapes: [
+        {
+          shape: [
+            [ 1, 1, 0 ],
+            [ 0, 1, 0 ],
+            [ 0, 1, 1 ],
+          ],
+          cost: [1, 0, 0]
+        },
         {
           shape: [
             [ 0, 1, 0 ],

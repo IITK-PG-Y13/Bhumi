@@ -8,7 +8,7 @@ function ensureArray (elem) {
     }
 
     let maxV = Math.max(...Object.keys(elem))
-    let newElem = newArray(maxV)
+    let newElem = new Array(maxV)
     for (let i = 0; i < maxV; i++) {
         newElem[i] = elem[i] || null
     }

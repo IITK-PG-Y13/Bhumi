@@ -307,15 +307,27 @@ export default {
         return false
       } else {
         if (this.currentTurn.moveType && this.currentTurn.moveType == 'SEQUENTIAL') {
+
+          let movePlayerIdx = -1
+          let allTypeTurns = this.gameConfig.turns.map((turn, idx) => { return {...turn, idx} }).filter((turn) => {
+            return (turn.type == this.currentTurn.type)
+          }).map((turn) => { movePlayerIdx += 1; return {...turn, movePlayerIdx} })
+
+          let currentTurnConfig = allTypeTurns.find((turn) => turn.idx == this.gameConfig.currentTurn)
+
+          let startingPlayerIdx = currentTurnConfig.movePlayerIdx
+          startingPlayerIdx = (startingPlayerIdx % this.gameConfig.totalPlayers) + 1
+
           if (!this.currentTurn.playersPlayed) {
-            return (this.playerIdx == 1)
+            return (this.playerIdx == startingPlayerIdx)
           }
 
-          if (this.currentTurn.playersPlayed.length == this.playerIdx) {
-            return true
+          let nextPlayer = startingPlayerIdx + ensureArray(this.currentTurn.playersPlayed).length - 1
+          if (nextPlayer > this.gameConfig.totalPlayers) {
+            nextPlayer -= this.gameConfig.totalPlayers
           }
 
-          return false
+          return (this.playerIdx == nextPlayer)
         } else {
           return true
         }

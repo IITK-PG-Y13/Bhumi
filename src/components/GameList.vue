@@ -6,6 +6,7 @@
         Welcome to Bhumi - The Game of Nurture
       </h1>
       <intro></intro>
+      <button class="button is-primary is-outlined is-light" onclick="window.open('/static/Bhumi - Rules.pdf', '_blank')">Learn the Rules</button>
     </div>
   </div>
   <div class="hero-body pt-6">

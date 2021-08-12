@@ -14,6 +14,7 @@
                        }">
             <strong>
               {{ rank.name }}: {{ rank.victoryPoints }} points
+              <em>({{ rank.seedsOnMap }} seeds)</em>
             </strong>
           </div>
         </div>
@@ -162,16 +163,28 @@ export default {
 
       return vp
     },
+    seedsOnMap (idx) {
+      let count = 0
+      Object.entries(this.maps[idx]).forEach((value) => {
+        if (value[1].state && value[1].state != 'used') {
+          count += 1
+        }
+      })
+
+      return count
+    },
     ranks () {
       let score = []
       for (let i = 1; i <= this.gameConfig.totalPlayers; i++) {
         score.push({
           name: i == this.playerIdx ? "You" : `Player ${i}`,
-          victoryPoints: this.victoryPoints(i)
+          victoryPoints: this.victoryPoints(i),
+          seedsOnMap: this.seedsOnMap(i),
+          score: this.victoryPoints(i) * 100 + this.seedsOnMap(i),
         })
       }
 
-      score.sort((a, b) => b.victoryPoints - a.victoryPoints)
+      score.sort((a, b) => b.score - a.score)
 
       return score
     }

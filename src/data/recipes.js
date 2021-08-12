@@ -1,7 +1,7 @@
 export default {
   products: [
     {
-      name: "Potatoes",
+      name: "Salad",
       shapes: [
         [
           [ 0, 0 ],
@@ -14,7 +14,7 @@ export default {
       ]
     },
     {
-      name: "Strawberries",
+      name: "Dessert",
       shapes: [
         [
           [ 2, 2, 0 ],

@@ -84,7 +84,7 @@ export default {
   data () {
     return {
       newGameConfig: {
-        turns: 30,
+        turns: 36,
         noDestructivePowers: false,
         maxPlayers: 4
       }

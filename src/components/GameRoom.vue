@@ -47,17 +47,19 @@
                 <recipe-list :recipes="gameConfig.recipes"
                              :recipeCount="recipeCount()"></recipe-list>
                 <hr style="margin: 0.5rem 0;"/>
-                <div class="column is-4"
-                     v-for="idx in gameConfig.totalPlayers"
-                     v-if="idx != playerIdx">
-                  <div class="box p-1 pointer" @click="actionView = 'OPP'; actionViewIdx = idx">
-                    <span class="has-text-weight-bold">
-                      {{ idx == playerIdx ? "You" : "Player " + idx }}
-                    </span>
-                    <board :map="lastMapState(idx)" size="is-micro"></board>
-                    <recipe-list :recipes="gameConfig.recipes"
-                                 :recipeCount="recipeCount(idx)"
-                                 size="are-small"></recipe-list>
+                <div class="columns is-multiline">
+                  <div class="column is-4"
+                       v-for="idx in gameConfig.totalPlayers"
+                       v-if="idx != playerIdx">
+                    <div class="box p-1 pointer" @click="actionView = 'OPP'; actionViewIdx = idx">
+                      <span class="has-text-weight-bold">
+                        {{ idx == playerIdx ? "You" : "Player " + idx }}
+                      </span>
+                      <board :map="lastMapState(idx)" size="is-micro"></board>
+                      <recipe-list :recipes="gameConfig.recipes"
+                                   :recipeCount="recipeCount(idx)"
+                                   size="are-small"></recipe-list>
+                    </div>
                   </div>
                 </div>
               </template>
@@ -322,7 +324,7 @@ export default {
             return (this.playerIdx == startingPlayerIdx)
           }
 
-          let nextPlayer = startingPlayerIdx + ensureArray(this.currentTurn.playersPlayed).length - 1
+          let nextPlayer = startingPlayerIdx + ensureArray(this.currentTurn.playersPlayed).filter((e) => e).length
           if (nextPlayer > this.gameConfig.totalPlayers) {
             nextPlayer -= this.gameConfig.totalPlayers
           }

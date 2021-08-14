@@ -1,6 +1,7 @@
 import shapes from './shapes'
 import recipeObj from './recipes'
 import powerObj from './powers'
+import curatedStart from './curatedStart'
 
 // Random number from a to b inclusive.
 function randInt (a, b) {
@@ -20,13 +21,17 @@ function shuffleArray(array) {
   return array;
 }
 
-const tileTypes = ['yellow', 'green', 'brown', 'blue']
+let tileTypes = ['yellow', 'green', 'brown', 'blue']
 const tileShapes = Object.keys(shapes.shapes)
 
 export default function createGame (config) {
   let numberOfTurns = 30;
   if (config != null && config.turns != null) {
     numberOfTurns = parseInt(config.turns)
+  }
+
+  if (config != null && config.curated) {
+    tileTypes = ['yellow', 'green', 'brown']
   }
 
   let cardsPerTurnMin = 2;
@@ -55,6 +60,10 @@ export default function createGame (config) {
     }
   })
 
+  if (config != null && config.curated) {
+    recipes = curatedStart.recipeList
+  }
+
   out.recipes = recipes
 
   let godPowers = []
@@ -79,6 +88,10 @@ export default function createGame (config) {
       ...selectedShape
     })
   })
+
+  if (config != null && config.curated) {
+    godPowers = curatedStart.powerList
+  }
 
   out.godPowers = godPowers
 

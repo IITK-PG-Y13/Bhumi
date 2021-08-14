@@ -13,7 +13,7 @@
         <div :class="{'is-inline-block': true,
                       'media-left': true,
                       'demo-card': true,
-                      [godPower.type]: true
+                      [godPowerClasses[godPower.powerType]]: true
                      }"></div>
         <div class="media-content">
           {{ godPowerDescriptions[godPower.powerType] }}
@@ -37,6 +37,7 @@ export default {
   props: ['godPower', 'recipes'],
   data () {
     return {
+      godPowerClasses: powerObj.godPowerClasses,
       godPowerDescriptions: powerObj.godPowerDescriptions
     }
   },

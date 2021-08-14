@@ -28,9 +28,10 @@
 
 <script>
 import shapes from '../../data/shapes'
+import powerObj from '../../data/powers'
 
 export default {
-  props: ['cardIdx', 'selected', 'recipe', 'header'],
+  props: ['cardIdx', 'selected', 'recipe', 'header', 'turnType'],
   data () {
     return {
       cardFlip: 0,
@@ -48,17 +49,17 @@ export default {
       let type = cl.type
       let newMatrix = shapes.get(cl.shape)
 
-      for (let i = 0; i < rotate; i++) {
-        newMatrix = shapes.rotate(newMatrix)
-        if (Array.isArray(type)) {
-          type = shapes.rotate(type)
-        }
-      }
-
       if (flip > 0) {
         newMatrix = shapes.flip(newMatrix)
         if (Array.isArray(type)) {
           type = shapes.flip(type)
+        }
+      }
+
+      for (let i = 0; i < rotate; i++) {
+        newMatrix = shapes.rotate(newMatrix)
+        if (Array.isArray(type)) {
+          type = shapes.rotate(type)
         }
       }
 
@@ -93,8 +94,10 @@ export default {
 
       if (typeof this.currentCard.type == "string") {
         return this.currentCard.type
-      } else {
+      } else if (Array.isArray(this.currentCard.type)) {
         return this.currentCard.type[i][j]
+      } else if (this.turnType == 'WORSHIP') {
+        return powerObj.godPowerClasses[this.recipe.powerType]
       }
     }
   }

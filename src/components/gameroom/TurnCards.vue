@@ -3,6 +3,7 @@
     <div class="column is-4"
          v-for="idx in cardListLength">
       <show-card :cardIdx="idx - 1"
+                 :turnType="currentTurn.type"
                  :recipe="recipes[idx - 1]"
                  :selected="cardIdx == idx - 1"
                  :header="headerKey ? recipes[idx - 1][headerKey] : null"

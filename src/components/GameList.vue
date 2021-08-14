@@ -117,7 +117,9 @@ export default {
             window.open(routeData.href, '_blank')
           }
         })
+
         // Update List
+        this.activeButNotStarted = []
         Object.entries(gameList).filter((key) => {
           return key[1].active &&
                  !key[1].started &&

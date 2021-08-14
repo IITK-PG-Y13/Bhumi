@@ -17,8 +17,8 @@
                 12
               </label>
               <label class="radio">
-                <input type="radio" v-model="newGameConfig.turns" value="36">
-                36
+                <input type="radio" v-model="newGameConfig.turns" value="18">
+                18
               </label>
             </div>
           </div>
@@ -26,6 +26,27 @@
       </div>
     </div>
     <div class="column is-6">
+      <div class="field is-horizontal has-text-left">
+        <div class="field-label" style="flex-basis: auto; text-align: left">
+          <label class="label">Curated Experience?</label>
+        </div>
+        <div class="field-body">
+          <div class="field">
+            <div class="control">
+              <label class="radio">
+                <input type="radio" v-model="newGameConfig.curated" :value="true">
+                Yes
+              </label>
+              <label class="radio">
+                <input type="radio" v-model="newGameConfig.curated" :value="false">
+                No
+              </label>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="column is-6" v-if="!newGameConfig.curated">
       <div class="field is-horizontal has-text-left">
         <div class="field-label" style="flex-basis: auto; text-align: left">
           <label class="label">Allow destructive God Powers</label>
@@ -84,9 +105,10 @@ export default {
   data () {
     return {
       newGameConfig: {
-        turns: 36,
+        turns: 18,
         noDestructivePowers: false,
-        maxPlayers: 4
+        maxPlayers: 4,
+        curated: true
       }
     }
   },

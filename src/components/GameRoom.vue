@@ -497,15 +497,22 @@ export default {
           this.$delete(this.map[coord], 'protected')
         })
 
-        let updatedRecipeCount = this.recipeCount()[this.selectedCardInfo.idx]
+        let vp = 1
+        if (this.selectedCardInfo.idx == 1) {
+          vp = 5
+        } else if (this.selectedCardInfo.idx == 2) {
+          vp = 10
+        }
+
+        let updatedRecipeCount = this.recipeCount()[0]
         if (updatedRecipeCount == null) {
-          updatedRecipeCount = 1
+          updatedRecipeCount = vp
         } else {
-          updatedRecipeCount += 1
+          updatedRecipeCount += vp
         }
 
         db.
-          ref(dbRefs.playerRecipes(this.gameId, this.playerIdx, this.selectedCardInfo.idx)).
+          ref(dbRefs.playerRecipes(this.gameId, this.playerIdx, 0)).
           set(updatedRecipeCount)
 
         this.saveState()

@@ -5,10 +5,9 @@
       <div class="columns">
         <div class="column is-2" style="max-height: 80vh; overflow-y: scroll;">
           <h3 class="title is-4">Reference</h3>
-          <h5 class="subtitle is-6">VP: {{ victoryPoints }}</h5>
           <div class="columns is-multiline">
             <div class="column is-12" v-for="recipe in gameConfig.recipes">
-              <show-recipe :recipe="recipe" :recipeCount="recipeCount()[recipe.idx]"></show-recipe>
+              <show-recipe :recipe="recipe"></show-recipe>
             </div>
           </div>
           <div class="columns is-multiline">
@@ -33,9 +32,6 @@
                   <li :class="{'is-active': actionView == 'CHAT'}" ref="chatTab">
                     <a @click="actionView = 'CHAT'">Chat</a>
                   </li>
-                  <li :class="{'is-active': actionView == 'TRADE'}" ref="tradeTab">
-                    <a @click="actionView = 'TRADE'">Trade</a>
-                  </li>
                 </ul>
               </div>
             </div>
@@ -44,8 +40,7 @@
                 <board :map="map"
                        :hoverData="(needToPlay ? selectedCardInfo : null)"
                        @click="clickCoord"></board>
-                <recipe-list :recipes="gameConfig.recipes"
-                             :recipeCount="recipeCount()"></recipe-list>
+                <recipe-list :vpCount="vpCount()" size="are-medium has-text-weight-bold"></recipe-list>
                 <hr style="margin: 0.5rem 0;"/>
                 <div class="columns is-multiline">
                   <div class="column is-4"
@@ -56,8 +51,7 @@
                         {{ idx == playerIdx ? "You" : "Player " + idx }}
                       </span>
                       <board :map="lastMapState(idx)" size="is-micro"></board>
-                      <recipe-list :recipes="gameConfig.recipes"
-                                   :recipeCount="recipeCount(idx)"
+                      <recipe-list :vpCount="vpCount(idx)"
                                    size="are-small"></recipe-list>
                     </div>
                   </div>
@@ -67,8 +61,7 @@
                 <board :map="lastMapState(actionViewIdx)"
                        :hoverData="(needToPlay ? selectedCardInfo : null)"
                        @click="clickCoord"></board>
-                <recipe-list :recipes="gameConfig.recipes"
-                             :recipeCount="recipeCount(actionViewIdx)"></recipe-list>
+                <recipe-list :vpCount="vpCount(actionViewIdx)"></recipe-list>
               </template>
               <template v-if="actionView == 'CHAT'">
                 <chat :chatData="gameConfig.chatData"
@@ -76,16 +69,13 @@
                       :activePlayerIdx="playerIdx"
                       @send="sendMessage"></chat>
               </template>
-              <template v-if="actionView == 'TRADE'">
-                <i>Coming Soon!</i>
-              </template>
             </div>
           </div>
         </div>
         <div class="column is-4">
           <div class="columns is-multiline">
             <div class="column is-12 is-paddingless is-italic is-size-7">
-              Move {{ turnIdx + 1 }} / {{ gameConfig.turns.length }}
+              Move {{ Math.floor(turnIdx / 3) + 1 }}.{{ (turnIdx % 3) + 1 }} / {{ gameConfig.turns.length / 3 }}
             </div>
             <div class="column is-12" v-if="currentTurn.type == 'SEED'">
               <h3 class="title is-4">Seed Phase</h3>
@@ -99,7 +89,6 @@
               <turn-cards :currentTurn="currentTurn"
                           :turnIdx="turnIdx"
                           :recipes="gameConfig.recipes"
-                          headerKey="name"
                           @select="selectCard"></turn-cards>
             </div>
             <div class="column is-12" v-else-if="currentTurn.type == 'WORSHIP'">
@@ -107,7 +96,6 @@
               <turn-cards :currentTurn="currentTurn"
                           :turnIdx="turnIdx"
                           :recipes="gameConfig.godPowers"
-                          headerKey="name"
                           @select="selectCard"></turn-cards>
             </div>
           </div>
@@ -283,27 +271,6 @@ export default {
         return this.gameConfig.recipes[this.cardIdx]
       }
     },
-    victoryPoints () {
-      let recipeCount = this.recipeCount()
-
-      let vp = 0
-
-      recipeCount.forEach((ct, idx) => {
-        switch (idx) {
-          case 0:
-            vp += ct
-            break
-          case 1:
-            vp += ct * 5
-            break
-          case 2:
-            vp += ct * 10
-            break
-        }
-      })
-
-      return vp
-    },
     needToPlay () {
       if (this.currentTurn.playersPlayed && this.currentTurn.playersPlayed[this.playerIdx]) {
         return false
@@ -433,30 +400,24 @@ export default {
       if (this.currentTurn.type == 'WORSHIP') {
         let out = true
 
-        this.selectedCardInfo.cost.forEach((cost, idx) => {
-          if (cost > 0 && (
-                !this.recipeCount()[idx] ||
-                this.recipeCount()[idx] < cost
-          )) {
-            out = false
-          }
-        })
+        if (this.selectedCardInfo.cost > this.vpCount()) {
+          out = false
+        }
 
         return out
       }
 
       return true
     },
-    recipeCount (idx) {
+    vpCount (idx) {
       if (idx == null) {
         idx = this.playerIdx
       }
-      if (!this.gameConfig.playerRecipes || !this.gameConfig.playerRecipes[idx]) {
-        return []
+      if (!this.gameConfig.playerVPs) {
+        return 0
       }
-      let rc = this.gameConfig.playerRecipes[idx]
 
-      return ensureArray(rc)
+      return this.gameConfig.playerVPs[idx]
     },
     saveState (playerId, map) {
       if (playerId == null) {
@@ -497,22 +458,15 @@ export default {
           this.$delete(this.map[coord], 'protected')
         })
 
-        let vp = 1
-        if (this.selectedCardInfo.idx == 1) {
-          vp = 5
-        } else if (this.selectedCardInfo.idx == 2) {
-          vp = 10
-        }
-
-        let updatedRecipeCount = this.recipeCount()[0]
+        let updatedRecipeCount = this.vpCount()
         if (updatedRecipeCount == null) {
-          updatedRecipeCount = vp
+          updatedRecipeCount = this.selectedCardInfo.vp
         } else {
-          updatedRecipeCount += vp
+          updatedRecipeCount += this.selectedCardInfo.vp
         }
 
         db.
-          ref(dbRefs.playerRecipes(this.gameId, this.playerIdx, 0)).
+          ref(dbRefs.playerVPs(this.gameId, this.playerIdx)).
           set(updatedRecipeCount)
 
         this.saveState()
@@ -556,15 +510,9 @@ export default {
         }
 
         // Subtract cost
-        this.selectedCardInfo.cost.forEach((cost, idx) => {
-          if (cost == 0) {
-            return
-          }
-
-          db.
-            ref(dbRefs.playerRecipes(this.gameId, this.playerIdx, idx)).
-            set(this.recipeCount()[idx] - cost)
-        })
+        db.
+          ref(dbRefs.playerVPs(this.gameId, this.playerIdx)).
+          set(this.vpCount() - this.selectedCardInfo.cost)
 
         this.saveState()
         this.turnStarted = true
@@ -583,6 +531,9 @@ export default {
       })
     },
     canPlayerPlay () {
+      if (!this.currentTurn) {
+        return false
+      }
       if (this.currentTurn.type == 'SEED') {
         return true
       }
@@ -611,9 +562,10 @@ export default {
             gameId: this.gameId
           }
         })
+        return
       }
 
-      if (!this.canPlayerPlay()) {
+      if (this.currentTurn && !this.canPlayerPlay()) {
         this.passTurn()
       }
     }

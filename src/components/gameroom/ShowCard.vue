@@ -1,12 +1,22 @@
 <template>
   <div :class="{card: true, 'has-border-success': selected, 'is-small': true}">
-    <div class="card-header pointer" v-if="header" @click="selectCard">
+    <div class="card-header pointer" v-if="['WORSHIP', 'HARVEST'].includes(turnType)" @click="selectCard">
       <div class="card-header-title is-centered">
-        {{ header }}
+        {{ recipe.name }}
       </div>
     </div>
-    <div class="card-content pointer px-0"
+    <div :class="'card-content pointer px-0 pb-2' + (turnType == 'SEED' ? '' : ' pt-0')"
          @click="selectCard">
+      <template v-if="turnType == 'HARVEST'">
+        <span class="is-size-7">
+          {{ recipe.vp }} WP
+        </span>
+      </template>
+      <template v-if="turnType == 'WORSHIP'">
+        <span class="is-size-7">
+          Cost: {{ recipe.cost }}
+        </span>
+      </template>
       <table class="game selector is-small">
         <tr v-for="(row, idx) in currentCard.shape">
           <td v-for="(cell, jdx) in row"
@@ -16,10 +26,10 @@
       </table>
     </div>
     <div class="card-footer">
-      <a class="card-footer-item px-0" @click="flipCard">
+      <a class="card-footer-item px-0 is-size-7 py-2" @click="flipCard">
         Flip
       </a>
-      <a class="card-footer-item px-0" @click="rotateCard">
+      <a class="card-footer-item px-0 is-size-7 py-1" @click="rotateCard">
         Rotate
       </a>
     </div>
@@ -31,7 +41,7 @@ import shapes from '../../data/shapes'
 import powerObj from '../../data/powers'
 
 export default {
-  props: ['cardIdx', 'selected', 'recipe', 'header', 'turnType'],
+  props: ['cardIdx', 'selected', 'recipe', 'header', 'turnType', 'description'],
   data () {
     return {
       cardFlip: 0,
@@ -77,15 +87,11 @@ export default {
     },
     rotateCard () {
       this.cardRotate = (this.cardRotate + 1) % 4
-      if (this.selected) {
-        this.selectCard()
-      }
+      this.selectCard()
     },
     flipCard () {
       this.cardFlip = 1 - this.cardFlip;
-      if (this.selected) {
-        this.selectCard()
-      }
+      this.selectCard()
     },
     getCellType (i, j) {
       if (this.currentCard.shape[i][j] == 0) {

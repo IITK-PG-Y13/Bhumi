@@ -6,7 +6,6 @@
                  :turnType="currentTurn.type"
                  :recipe="recipes[idx - 1]"
                  :selected="cardIdx == idx - 1"
-                 :header="headerKey ? recipes[idx - 1][headerKey] : null"
                  @select="selectCard"></show-card>
     </div>
   </div>
@@ -25,7 +24,7 @@ export default {
   components: {
     ShowCard,
   },
-  props: [ 'currentTurn', 'recipes', 'turnIdx', 'headerKey' ],
+  props: [ 'currentTurn', 'recipes', 'turnIdx' ],
   computed: {
     cardListLength () {
       return this.recipes.length

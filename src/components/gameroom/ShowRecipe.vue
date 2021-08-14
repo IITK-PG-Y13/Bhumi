@@ -2,7 +2,7 @@
   <div class="card is-tiny">
     <div class="card-header">
       <div class="card-header-title">
-        {{ recipe.name }} {{ recipeCount ? " x " + recipeCount : " x 0" }}
+        {{ recipe.name }} [{{ recipe.vp }} WP]
       </div>
     </div>
     <div class="card-content">
@@ -19,7 +19,7 @@
 
 <script>
 export default {
-  props: ['recipe', 'recipeCount'],
+  props: ['recipe'],
   methods: {
     getCellType (i, j) {
       if (this.recipe.shape[i][j] == 0) {

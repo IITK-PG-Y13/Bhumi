@@ -19,14 +19,6 @@
           {{ godPowerDescriptions[godPower.powerType] }}
         </div>
       </div>
-      <div class="is-size-7 px-4">
-        Requirements
-        <ul class="mt-0">
-          <li v-for="(cost, idx) in godPower.cost" v-if="cost > 0">
-            {{ recipes[idx].name }} x {{ cost }}
-          </li>
-        </ul>
-      </div>
     </div>
   </div>
 </template>

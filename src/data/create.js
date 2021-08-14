@@ -48,7 +48,7 @@ export default function createGame (config) {
     out.totalPlayers = parseInt(config.maxPlayers)
   }
 
-  let recipes = recipeObj.products.map((elem, idx) => {
+  let recipes = recipeObj.products.map((elem) => {
     let shuffledTypes = shuffleArray(tileTypes.slice(0))
     let shape = randElem(elem.shapes)
 
@@ -56,7 +56,7 @@ export default function createGame (config) {
       name: elem.name,
       shape: shape.map((row) => row.map((cell) => cell == 0 ? 0 : 1)),
       type: shape.map((row) => row.map((cell) => cell == 0 ? "null" : shuffledTypes[cell - 1])),
-      idx
+      vp: elem.vp,
     }
   })
 
@@ -68,7 +68,7 @@ export default function createGame (config) {
 
   let godPowers = []
 
-  powerObj.godPowers.forEach((elem, idx) => {
+  powerObj.godPowers.forEach((elem) => {
     if (config != null && config.noDestructivePowers) {
       if (["BURN"].includes(elem.powerType)) {
         return

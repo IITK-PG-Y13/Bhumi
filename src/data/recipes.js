@@ -2,6 +2,7 @@ export default {
   products: [
     {
       name: "Salad",
+      vp: 1,
       shapes: [
         [
           [ 0, 0 ],
@@ -15,6 +16,7 @@ export default {
     },
     {
       name: "Dessert",
+      vp: 5,
       shapes: [
         [
           [ 2, 2, 0 ],
@@ -34,6 +36,7 @@ export default {
     },
     {
       name: "Nectar",
+      vp: 10,
       shapes: [
         [
           [ 0, 0, 2 ],

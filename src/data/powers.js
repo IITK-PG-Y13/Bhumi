@@ -11,7 +11,7 @@ export default {
             [ 1, 1, 1 ],
             [ 0, 0, 0 ],
           ],
-          cost: [1, 0, 0]
+          cost: 1
         },
         {
           shape: [
@@ -19,7 +19,7 @@ export default {
             [ 1, 1, 0 ],
             [ 0, 0, 0 ],
           ],
-          cost: [1, 0, 0]
+          cost: 1
         },
         {
           shape: [
@@ -27,7 +27,7 @@ export default {
             [ 1, 1, 1 ],
             [ 1, 1, 1 ],
           ],
-          cost: [1, 1, 0]
+          cost: 2
         },
       ],
     },
@@ -42,7 +42,7 @@ export default {
             [ 0, 1, 0 ],
             [ 0, 0, 0 ],
           ],
-          cost: [2, 0, 0]
+          cost: 2
         },
         {
           shape: [
@@ -50,7 +50,7 @@ export default {
             [ 0, 1, 0 ],
             [ 0, 0, 1 ],
           ],
-          cost: [1, 1, 0]
+          cost: 4
         }
       ],
     },
@@ -65,7 +65,7 @@ export default {
             [ 0, 1, 0 ],
             [ 0, 1, 1 ],
           ],
-          cost: [1, 0, 0]
+          cost: 1
         },
         {
           shape: [
@@ -73,7 +73,7 @@ export default {
             [ 1, 1, 1 ],
             [ 0, 1, 0 ],
           ],
-          cost: [1, 0, 0]
+          cost: 1
         }
       ],
     },

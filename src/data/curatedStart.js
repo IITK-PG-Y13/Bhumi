@@ -10,7 +10,7 @@ export default {
                 [ "null", "null" ],
                 [ "brown", "brown" ]
             ],
-            idx: 0
+            vp: 1
         },
         {
             name: "Dessert",
@@ -24,7 +24,7 @@ export default {
                 [ "green", "green", "null" ],
                 [ "null", "green", "null" ]
             ],
-            idx: 1
+            vp: 5
         },
         {
             name: "Nectar",
@@ -38,7 +38,7 @@ export default {
                 [ "yellow", "yellow", "green" ],
                 [ "yellow", "green", "green" ]
             ],
-            idx: 2
+            vp: 10
         }
     ],
     powerList: [
@@ -51,7 +51,7 @@ export default {
                 [ 1, 1, 0 ],
                 [ 0, 0, 0 ]
             ],
-            cost: [1, 0, 0]
+            cost: 1
         },
         {
             name: "Agni",
@@ -62,7 +62,7 @@ export default {
                 [ 0, 1, 0 ],
                 [ 0, 0, 0 ],
             ],
-            cost: [2, 0, 0]
+            cost: 2
         },
         {
             name: "Himavat",
@@ -73,7 +73,7 @@ export default {
                 [ 1, 1, 1 ],
                 [ 0, 1, 0 ],
             ],
-            cost: [1, 0, 0]
+            cost: 1
         }
     ]
 }

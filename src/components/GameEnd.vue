@@ -31,16 +31,13 @@
                     {{ idx == playerIdx ? "You" : "Player " + idx }}
                   </strong>
                   <strong class="level-right">
-                    Victory Points: {{ victoryPoints(idx) }}
+                    Victory Points: {{ vpCount(idx) }}
                   </strong>
                 </div>
               </div>
               <div class="column is-12">
                 <board :map="map" size="is-small"></board>
-              </div>
-              <div class="column is-4" v-for="recipe in gameConfig.recipes">
-                <show-recipe :recipe="recipe"
-                             :recipeCount="recipeCount(idx, recipe.idx)"></show-recipe>
+                <recipe-list :vpCount="vpCount(idx)"></recipe-list>
               </div>
             </div>
           </div>
@@ -57,7 +54,7 @@
 <script>
 import { db } from '../firebase/init'
 import Board from './gameroom/Board.vue'
-import ShowRecipe from './gameroom/ShowRecipe.vue'
+import RecipeList from './gameroom/RecipeList.vue'
 import { ensureArray } from '../util/util'
 
 export default {
@@ -71,7 +68,7 @@ export default {
   },
   components: {
     Board,
-    ShowRecipe
+    RecipeList
   },
   props: [ 'gameId' ],
   watch: {
@@ -123,45 +120,15 @@ export default {
         this.$set(this.maps, idx, JSON.parse(this.gameConfig.playerState[idx]))
       })
     },
-    recipeCount (playerId, recipeIdx) {
-      if (!this.gameConfig.playerRecipes || !this.gameConfig.playerRecipes[playerId]) {
-        return 0
-      }
-
-      return this.gameConfig.playerRecipes[playerId][recipeIdx]
-    },
-    recipeCountTotal (idx) {
+    vpCount (idx) {
       if (idx == null) {
         idx = this.playerIdx
       }
-      if (!this.gameConfig.playerRecipes || !this.gameConfig.playerRecipes[idx]) {
-        return []
+      if (!this.gameConfig.playerVPs || !this.gameConfig.playerVPs[idx]) {
+        return 0
       }
-      let rc = this.gameConfig.playerRecipes[idx]
 
-      return ensureArray(rc)
-    },
-    victoryPoints (idx) {
-      // FIXME: Currently copied from GameRoom.vue
-      let recipeCount = this.recipeCountTotal(idx)
-
-      let vp = 0
-
-      recipeCount.forEach((ct, idx) => {
-        switch (idx) {
-          case 0:
-            vp += ct
-            break
-          case 1:
-            vp += ct * 5
-            break
-          case 2:
-            vp += ct * 10
-            break
-        }
-      })
-
-      return vp
+      return this.gameConfig.playerVPs[idx]
     },
     seedsOnMap (idx) {
       let count = 0
@@ -178,9 +145,9 @@ export default {
       for (let i = 1; i <= this.gameConfig.totalPlayers; i++) {
         score.push({
           name: i == this.playerIdx ? "You" : `Player ${i}`,
-          victoryPoints: this.victoryPoints(i),
+          victoryPoints: this.vpCount(i),
           seedsOnMap: this.seedsOnMap(i),
-          score: this.victoryPoints(i) * 100 + this.seedsOnMap(i),
+          score: this.vpCount(i) * 100 + this.seedsOnMap(i),
         })
       }
 

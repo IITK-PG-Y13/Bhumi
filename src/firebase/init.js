@@ -14,8 +14,8 @@ let dbRefs = {
     playerState (gameId, turnId, playerId) {
         return `games/${gameId}/turns/${turnId}/playerState/${playerId}`
     },
-    playerRecipes (gameId, playerId, recipeId) {
-        return `games/${gameId}/playerRecipes/${playerId}/${recipeId}`
+    playerVPs (gameId, playerId) {
+        return `games/${gameId}/playerVPs/${playerId}`
     },
     playersPlayed (gameId, turnId, playerId) {
         return `games/${gameId}/turns/${turnId}/playersPlayed/${playerId}`

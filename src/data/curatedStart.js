@@ -10,7 +10,7 @@ export default {
                 [ "null", "null" ],
                 [ "brown", "brown" ]
             ],
-            vp: 1
+            vp: 4
         },
         {
             name: "Dessert",
@@ -24,7 +24,7 @@ export default {
                 [ "green", "green", "null" ],
                 [ "null", "green", "null" ]
             ],
-            vp: 5
+            vp: 15
         },
         {
             name: "Nectar",
@@ -38,7 +38,7 @@ export default {
                 [ "yellow", "yellow", "green" ],
                 [ "yellow", "green", "green" ]
             ],
-            vp: 10
+            vp: 25
         }
     ],
     powerList: [
@@ -46,33 +46,18 @@ export default {
             name: "Varuna",
             description: "Indic God of the ocean",
             powerType: "REJUVENATE",
-            shape: [
-                [ 1, 1, 0 ],
-                [ 1, 1, 0 ],
-                [ 0, 0, 0 ]
-            ],
             cost: 1
         },
         {
             name: "Agni",
             description: "Indic God of fire",
             powerType: "BURN",
-            shape: [
-                [ 0, 0, 0 ],
-                [ 0, 1, 0 ],
-                [ 0, 0, 0 ],
-            ],
-            cost: 2
+            cost: 10
         },
         {
             name: "Himavat",
             description: "Mountain God of the Himalayas",
             powerType: "GUARD",
-            shape: [
-                [ 0, 1, 0 ],
-                [ 1, 1, 1 ],
-                [ 0, 1, 0 ],
-            ],
             cost: 1
         }
     ]

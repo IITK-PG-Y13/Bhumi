@@ -93,10 +93,11 @@
             </div>
             <div class="column is-12" v-else-if="currentTurn.type == 'WORSHIP'">
               <h3 class="title is-4">Worship Phase</h3>
-              <turn-cards :currentTurn="currentTurn"
+              <worship-cards :currentTurn="currentTurn"
                           :turnIdx="turnIdx"
+                          :vpCount="vpCount()"
                           :recipes="gameConfig.godPowers"
-                          @select="selectCard"></turn-cards>
+                          @select="selectCard"></worship-cards>
             </div>
           </div>
           <div class="tile is-ancestor is-parent player-status-list">
@@ -165,6 +166,7 @@ import ShowGod from './gameroom/ShowGod.vue'
 import Board from './gameroom/Board.vue'
 import Chat from './gameroom/Chat.vue'
 import TurnCards from './gameroom/TurnCards.vue'
+import WorshipCards from './gameroom/WorshipCards.vue'
 
 export default {
   data () {
@@ -188,6 +190,7 @@ export default {
     ShowRecipe,
     RecipeList,
     TurnCards,
+    WorshipCards,
     ShowGod,
     Chat
   },
@@ -385,26 +388,26 @@ export default {
         if (this.map[[i, j]] && this.map[[i, j]].state == 'used') {
           return false
         }
-
-        return true
       }
 
       if (this.currentTurn.type == 'HARVEST') {
         if (!(this.map[[i, j]] && type == this.map[[i, j]].state)) {
           return false
         }
-
-        return true
       }
 
       if (this.currentTurn.type == 'WORSHIP') {
-        let out = true
-
         if (this.selectedCardInfo.cost > this.vpCount()) {
-          out = false
+          return false;
         }
 
-        return out
+        if (this.selectedCardInfo.powerType == 'BURN') {
+          let oppMap = this.lastMapState(this.actionViewIdx);
+
+          if (oppMap[[i, j]] && oppMap[[i, j]].protected) {
+            return false;
+          }
+        }
       }
 
       return true

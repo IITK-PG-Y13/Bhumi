@@ -75,17 +75,14 @@ export default function createGame (config) {
       }
     }
 
-    let availableShapes = elem.shapes
-    let selectedShape = randElem(availableShapes)
-
     let type = powerObj.godPowerClasses[elem.powerType]
 
     godPowers.push({
       name: elem.name,
       description: elem.description,
       powerType: elem.powerType,
+      cost: elem.cost,
       type: powerObj.godPowerClasses[elem.powerType],
-      ...selectedShape
     })
   })
 

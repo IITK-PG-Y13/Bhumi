@@ -114,9 +114,4 @@ export default {
 .pointer {
   cursor: pointer;
 }
-
-.has-border-success {
-  border: 2px solid #48c78e;
-  position: relative;
-}
 </style>

@@ -21,17 +21,13 @@ function shuffleArray(array) {
   return array;
 }
 
-let tileTypes = ['yellow', 'green', 'brown', 'blue']
+let tileTypes = ['yellow', 'green', 'brown']
 const tileShapes = Object.keys(shapes.shapes)
 
 export default function createGame (config) {
   let numberOfTurns = 30;
   if (config != null && config.turns != null) {
     numberOfTurns = parseInt(config.turns)
-  }
-
-  if (config != null && config.curated) {
-    tileTypes = ['yellow', 'green', 'brown']
   }
 
   let cardsPerTurnMin = 2;
@@ -86,10 +82,6 @@ export default function createGame (config) {
     })
   })
 
-  if (config != null && config.curated) {
-    godPowers = curatedStart.powerList
-  }
-
   out.godPowers = godPowers
 
   let turns = []
@@ -106,13 +98,13 @@ export default function createGame (config) {
 
     turns.push({
       type: "SEED",
-      // moveType: "PARALLEL",
+      moveType: "SEQUENTIAL", // PARALLEL
       cardList,
     })
 
     turns.push({
       type: "HARVEST",
-      // moveType: "PARALLEL"
+      moveType: "SEQUENTIAL"
     })
 
     turns.push({

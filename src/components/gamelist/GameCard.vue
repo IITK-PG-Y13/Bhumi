@@ -36,7 +36,8 @@
 </template>
 
 <script>
-import { db } from '../../firebase/init'
+import { db, dbRefs } from '../../firebase/init'
+import { getCurrentPlayer } from '../../util/login'
 
 export default {
   props: ['gameId', 'gameData', 'highlight'],
@@ -47,7 +48,7 @@ export default {
   },
   computed: {
     playerIdx () {
-      return this.gameData.players.indexOf(window.localStorage.getItem('playerId'))
+      return this.gameData.players.indexOf(getCurrentPlayer())
     },
     gameURL () {
       return window.location.origin + "/#/" + this.gameId
@@ -69,7 +70,7 @@ export default {
         return false;
       }
 
-      if (this.gameData.players.includes(window.localStorage.getItem('playerId'))) {
+      if (this.gameData.players.includes(getCurrentPlayer())) {
         return false;
       }
 
@@ -81,7 +82,7 @@ export default {
     },
     join () {
       let playerIdx = this.gameData.players.length
-      db.ref(`games/${this.gameId}/players/${playerIdx}`).set(window.localStorage.getItem('playerId'))
+      db.ref(dbRefs.gamePlayers(this.gameId, playerIdx)).set(getCurrentPlayer())
     },
     canStart () {
       if (this.gameData.started) {
@@ -89,15 +90,15 @@ export default {
       }
 
       if (this.gameData.players &&
-          this.gameData.players.includes(window.localStorage.getItem('playerId')) &&
-          this.gameData.players.indexOf(window.localStorage.getItem('playerId')) === 1) {
+          this.gameData.players.includes(getCurrentPlayer()) &&
+          this.gameData.players.indexOf(getCurrentPlayer()) === 1) {
         return true
       }
 
       return false;
     },
     start () {
-      db.ref('games/' + this.gameId).update({
+      db.ref(dbRefs.gameConfig(this.gameId)).update({
         totalPlayers: this.gameData.players.length - 1,
         started: true
       }).then(() => {

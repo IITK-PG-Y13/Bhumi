@@ -201,7 +201,7 @@ export default {
       handler () {
         this.$rtdbBind('gameConfig', db.ref(dbRefs.gameConfig(this.gameId))).then(() => {
           // Loaded
-          if (window.localStorage.getItem('playerId') == null ||
+          if (getCurrentPlayer() == null ||
               this.gameConfig.players == null ||
               !this.gameConfig.started) {
 
@@ -262,7 +262,7 @@ export default {
   },
   computed: {
     activePlayer () {
-      return this.gameConfig.players.includes(window.localStorage.getItem('playerId'))
+      return this.gameConfig.players.includes(getCurrentPlayer())
     },
     currentTurn () {
       return this.gameConfig.turns[this.turnIdx]
@@ -330,7 +330,7 @@ export default {
       return {}
     },
     setGameData () {
-      this.playerIdx = this.gameConfig.players.indexOf(window.localStorage.getItem('playerId'))
+      this.playerIdx = this.gameConfig.players.indexOf(getCurrentPlayer())
 
       this.map = this.lastMapState(this.playerIdx)
       this.nextTurn()

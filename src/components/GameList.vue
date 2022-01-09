@@ -63,12 +63,12 @@
 </template>
 
 <script>
-import { db } from '../firebase/init'
+import { db, dbRefs } from '../firebase/init'
 import GameCard from './gamelist/GameCard.vue'
 import Intro from './gamelist/Intro.vue'
 import CreateNewGame from './gamelist/CreateNewGame.vue'
 import createGame from '../data/create'
-import { v4 } from 'uuid'
+import { getCurrentPlayer, setCurrentPlayer } from '../util/login'
 
 function uuid6digit () {
   let str = "QWERTYUIOPASDFGHJKLZXCVBNM"
@@ -124,8 +124,8 @@ export default {
           return key[1].active &&
                  !key[1].started &&
                  key[1].players &&
-                 key[1].players.includes(window.localStorage.getItem('playerId')) &&
-                 key[1].players.indexOf(window.localStorage.getItem('playerId')) != 1
+                 key[1].players.includes(getCurrentPlayer()) &&
+                 key[1].players.indexOf(getCurrentPlayer()) != 1
         }).forEach((key) => {
           if (!this.activeButNotStarted.includes(key[0])) {
             this.activeButNotStarted.push(key[0])
@@ -142,9 +142,7 @@ export default {
     })
   },
   created () {
-    if (window.localStorage.getItem('playerId') == null) {
-      window.localStorage.setItem('playerId', v4())
-    }
+    setCurrentPlayer()
   },
   computed: {
     activeGames () {
@@ -152,7 +150,7 @@ export default {
         return key[1].active &&
                key[1].started &&
                key[1].players &&
-               key[1].players.includes(window.localStorage.getItem('playerId'))
+               key[1].players.includes(getCurrentPlayer())
       });
     },
     draftGames () {
@@ -166,7 +164,7 @@ export default {
         return key[1].active &&
                key[1].started &&
                key[1].players &&
-               !key[1].players.includes(window.localStorage.getItem('playerId'))
+               !key[1].players.includes(getCurrentPlayer())
       });
     },
     archivedGames () {
@@ -174,17 +172,17 @@ export default {
         return !key[1].active &&
                key[1].started &&
                key[1].players &&
-               key[1].players.includes(window.localStorage.getItem('playerId'))
+               key[1].players.includes(getCurrentPlayer())
       });
     }
   },
   methods: {
     createNewGame (newGameConfig) {
       let outputJson = createGame(newGameConfig)
-      outputJson.players = [ null, window.localStorage.getItem('playerId') ]
+      outputJson.players = [ null, getCurrentPlayer() ]
 
       let gameId = uuid6digit()
-      db.ref('games/' + gameId).set(outputJson)
+      db.ref(dbRefs.gameConfig(gameId)).set(outputJson)
     }
   }
 }

@@ -52,10 +52,11 @@
 </template>
 
 <script>
-import { db } from '../firebase/init'
+import { db, dbRefs } from '../firebase/init'
 import Board from './gameroom/Board.vue'
 import RecipeList from './gameroom/RecipeList.vue'
 import { ensureArray } from '../util/util'
+import { getCurrentPlayer } from '../util/login'
 
 export default {
   data () {
@@ -75,12 +76,12 @@ export default {
     gameId: {
       immediate: true,
       handler () {
-        this.$rtdbBind('gameConfig', db.ref('games/' + this.gameId)).then(() => {
+        this.$rtdbBind('gameConfig', db.ref(dbRefs.gameConfig(this.gameId))).then(() => {
           // Loaded
-          if (window.localStorage.getItem('playerId') == null ||
+          if (getCurrentPlayer() == null ||
               this.gameConfig.players == null ||
               !this.gameConfig.started ||
-              !this.gameConfig.players.includes(window.localStorage.getItem('playerId'))) {
+              !this.gameConfig.players.includes(getCurrentPlayer())) {
 
             this.$router.push({
               path: '/',
@@ -101,7 +102,7 @@ export default {
           }
 
           if (this.gameConfig.active) {
-            db.ref(`games/${this.gameId}/active`).set(false)
+            db.ref(dbRefs.gameActive(this.gameId)).set(false)
           }
 
           this.setGameData()
@@ -112,7 +113,7 @@ export default {
   },
   methods: {
     setGameData () {
-      this.playerIdx = this.gameConfig.players.indexOf(window.localStorage.getItem('playerId'))
+      this.playerIdx = this.gameConfig.players.indexOf(getCurrentPlayer())
 
       let latestTurn = this.gameConfig.turns.length - 1
 

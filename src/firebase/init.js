@@ -12,7 +12,7 @@ let dbRefs = {
         return `games/${id}/active`
     },
     gamePlayers (id, playerId) {
-        return `games/${gameId}/players/${playerId}`
+        return `games/${id}/players/${playerId}`
     },
     state (gameId, playerId) {
         return `games/${gameId}/playerState/${playerId}`

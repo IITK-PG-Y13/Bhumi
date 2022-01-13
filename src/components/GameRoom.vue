@@ -167,6 +167,7 @@ import Board from './gameroom/Board.vue'
 import Chat from './gameroom/Chat.vue'
 import TurnCards from './gameroom/TurnCards.vue'
 import WorshipCards from './gameroom/WorshipCards.vue'
+import { getCurrentPlayer } from '../util/login'
 
 export default {
   data () {

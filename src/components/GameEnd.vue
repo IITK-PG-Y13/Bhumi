@@ -28,7 +28,7 @@
               <div class="column is-12">
                 <div class="notification is-default level">
                   <strong class="level-left">
-                    {{ idx == playerIdx ? "You" : "Player " + idx }}
+                    {{ playerNames[idx] }}
                   </strong>
                   <strong class="level-right">
                     Victory Points: {{ vpCount(idx) }}
@@ -63,6 +63,7 @@ export default {
     return {
       loaded: false,
       playerIdx: -1,
+      playerNames: {},
       gameConfig: null,
       maps: {}
     }
@@ -115,6 +116,20 @@ export default {
     setGameData () {
       this.playerIdx = this.gameConfig.players.indexOf(getCurrentPlayer())
 
+      this.playerNames = {}
+      this.gameConfig.players.forEach((player, idx) => {
+        if (idx == 0)
+          return;
+        db.ref(dbRefs.playerName(player)).once('value').then((snapshot) => {
+          if (snapshot.val() && snapshot.val() != null && snapshot.val() != "") {
+            this.playerNames[idx] = snapshot.val()
+          } else {
+            this.playerNames[idx] = "Player " + idx
+          }
+        })
+      })
+      this.playerNames[this.playerIdx] = "You"
+
       let latestTurn = this.gameConfig.turns.length - 1
 
       this.gameConfig.players.map((player, idx) => {
@@ -145,7 +160,7 @@ export default {
       let score = []
       for (let i = 1; i <= this.gameConfig.totalPlayers; i++) {
         score.push({
-          name: i == this.playerIdx ? "You" : `Player ${i}`,
+          name: this.playerNames[i],
           victoryPoints: this.vpCount(i),
           seedsOnMap: this.seedsOnMap(i),
           score: this.vpCount(i) * 100 + this.seedsOnMap(i),

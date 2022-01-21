@@ -27,7 +27,7 @@
                   <li v-for="idx in gameConfig.totalPlayers"
                       :class="{'is-active': (actionView == 'OPP' && actionViewIdx == idx)}"
                       v-if="idx != playerIdx">
-                    <a @click="actionView = 'OPP'; actionViewIdx = idx">Player {{ idx }}</a>
+                    <a @click="actionView = 'OPP'; actionViewIdx = idx">{{ playerNames[idx] }}</a>
                   </li>
                   <li :class="{'is-active': actionView == 'CHAT'}" ref="chatTab">
                     <a @click="actionView = 'CHAT'">Chat</a>
@@ -48,7 +48,7 @@
                        v-if="idx != playerIdx">
                     <div class="box p-1 pointer" @click="actionView = 'OPP'; actionViewIdx = idx">
                       <span class="has-text-weight-bold">
-                        {{ idx == playerIdx ? "You" : "Player " + idx }}
+                        {{ playerNames[idx] }}
                       </span>
                       <board :map="lastMapState(idx)" size="is-micro"></board>
                       <recipe-list :vpCount="vpCount(idx)"
@@ -66,6 +66,7 @@
               <template v-if="actionView == 'CHAT'">
                 <chat :chatData="gameConfig.chatData"
                       :activePlayer="activePlayer"
+                      :playerNames="playerNames"
                       :activePlayerIdx="playerIdx"
                       @send="sendMessage"></chat>
               </template>
@@ -105,10 +106,10 @@
                  v-for="idx in gameConfig.totalPlayers">
               <div class="notification is-success is-light m-1"
                    v-if="currentTurn.playersPlayed && currentTurn.playersPlayed[idx]">
-                {{ idx == playerIdx ? "You" : "Player " + idx }}
+                {{ playerNames[idx] }}
               </div>
               <div class="notification is-default m-1" v-else>
-                {{ idx == playerIdx ? "You" : "Player " + idx }}
+                {{ playerNames[idx] }}
               </div>
             </div>
           </div>
@@ -177,6 +178,7 @@ export default {
       loaded: false,
       gameConfig: null,
       playerIdx: null,
+      playerNames: {},
       turnIdx: 0,
       cardIdx: 0,
       selectedCardInfo: {},
@@ -332,6 +334,20 @@ export default {
     },
     setGameData () {
       this.playerIdx = this.gameConfig.players.indexOf(getCurrentPlayer())
+
+      this.playerNames = {}
+      this.gameConfig.players.forEach((player, idx) => {
+        if (idx == 0)
+          return;
+        db.ref(dbRefs.playerName(player)).once('value').then((snapshot) => {
+          if (snapshot.val() && snapshot.val() != null && snapshot.val() != "") {
+            this.playerNames[idx] = snapshot.val()
+          } else {
+            this.playerNames[idx] = "Player " + idx
+          }
+        })
+      })
+      this.playerNames[this.playerIdx] = "You"
 
       this.map = this.lastMapState(this.playerIdx)
       this.nextTurn()

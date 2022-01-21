@@ -95,7 +95,7 @@ export default {
     CreateNewGame
   },
   firebase: {
-    gameList: db.ref('games')
+    gameList: db.ref('games'),
   },
   watch: {
     'gameList': {
@@ -142,6 +142,7 @@ export default {
     })
   },
   created () {
+    // Redundant, but just to be safe
     setCurrentPlayer()
   },
   computed: {

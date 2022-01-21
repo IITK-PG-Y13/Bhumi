@@ -5,6 +5,9 @@ import firebaseConfig from './config';
 const firebaseApp = firebase.initializeApp(firebaseConfig);
 
 let dbRefs = {
+    playerName (playerUuid) {
+        return `players/${playerUuid}`
+    },
     gameConfig (id) {
         return `games/${id}`
     },

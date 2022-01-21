@@ -3,7 +3,7 @@
     <div class="tile is-ancestor is-parent">
       <div class="tile is-child" v-for="idx in gameData.totalPlayers">
           <div class="notification m-1 is-info is-light" v-if="gameData.players && gameData.players[idx]">
-            {{ idx === playerIdx ? "You" : "Player " + idx }}
+            {{ playerName(gameData.players[idx], idx) }}
 
           </div>
           <div class="notification m-1 is-default is-italic" v-else>
@@ -45,6 +45,9 @@ export default {
     return {
       isHighlight: this.highlight,
     }
+  },
+  firebase: {
+    players: db.ref('players')
   },
   computed: {
     playerIdx () {
@@ -104,6 +107,15 @@ export default {
       }).then(() => {
         this.$router.push(`/${this.gameId}`)
       })
+    },
+    playerName (playerUuid, idx) {
+      if (idx == this.playerIdx) {
+        return "You"
+      } else if (this.players && this.players[playerUuid]) {
+        return this.players[playerUuid]
+      } else {
+        return "Player " + idx
+      }
     }
   }
 }

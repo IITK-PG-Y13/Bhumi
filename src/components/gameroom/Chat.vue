@@ -3,7 +3,7 @@
     <div v-for="chat in allChatData"
          class="column py-1 is-12 has-text-left">
       <div :class="{box: true, 'has-background-info-light': isCurrentPlayer(chat)}">
-        <strong>{{ isCurrentPlayer(chat) ? "You" : "Player " + chat.playerIdx }}: </strong>
+        <strong>{{ playerNames[chat.playerIdx] }}: </strong>
         {{ chat.message }}
       </div>
     </div>
@@ -27,7 +27,7 @@
 <script>
 import { ensureArray } from '../../util/util'
 export default {
-  props: ['chatData', 'activePlayer', 'activePlayerIdx'],
+  props: ['chatData', 'activePlayer', 'activePlayerIdx', 'playerNames'],
   data () {
     return {
       message: ""
